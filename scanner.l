@@ -21,13 +21,23 @@ else 						{ pt("ELSE"); }
 while 						{ pt("WHILE"); }
 extends 					{ pt("EXTEND"); }
 return 						{ pt("RETURN"); }
+String 						{ pt("STRING"); }
+Integer						{ pt("INTEGER"); }
+Obj							{ pt("OBJ"); }
+Boolean						{ pt("BOOL"); }
+true						{ pt("TRUE"); }
+false						{ pt("FALSE"); }
+and 						{ pt("AND"); }
+or 							{ pt("OR"); }
+not 						{ pt("NOT"); }
+Nothing						{ pt("NOTHING"); }
+none						{ pt("NONE"); }
 "{" 						{ pt("{"); }
 "}" 						{ pt("}"); }
 "(" 						{ pt("("); }
 ")" 						{ pt(")"); }
 ";" 						{ pt(";"); }
 ":" 						{ pt(":"); }
-"=" 						{ pt("="); }
 "." 						{ pt("."); }
 "," 						{ pt(","); }
 "_" 						{ pt("_"); }
@@ -35,19 +45,22 @@ return 						{ pt("RETURN"); }
 "-" 						{ pt("-"); }
 "*"							{ pt("*"); }
 "/"							{ pt("/"); }
+"<=" 						{ pt("ATMOST"); }
 "<" 						{ pt("<"); }
+">=" 						{ pt("ATLEAST"); }
 ">" 						{ pt(">"); }
-[0-9]+\.[0-9]+ 				{ pt("FLOAT_LIT"); }
+"==" 						{ pt("EQUALS"); }
+"=" 						{ pt("="); }
 [0-9]+ 						{ pt("INT_LIT"); }
 [_a-zA-Z0-9]+				{ pt("IDENT"); }
 \"\"\"(.|\n)*\"\"\"			{ pt("STRING_LIT_TRI"); }
-\"(\\[0tnr]|[^"\n\\])*\"	{ pt("STRING_LIT"); }
+\"(\\[0bftnr\\]|[^"\n\\])*\"	{ pt("STRING_LIT"); }
 \"(\\.|[^"\n])*\"			{ pt("STRING_LIT"); cerr << yylineno << ": Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted (at '" << yytext << "')\"" << endl; }
 \"(\\.|[^"]|\n)*\"			{ pt("STRING_LIT_ERR"); cerr << yylineno << ": Newline before string terminated; single-quoted strings must be entirely on one line (at '" << yytext << "')\"" << endl; }
 \/\*						{ BEGIN(COMMENT); }
 <COMMENT>\*\/				{ BEGIN(INITIAL); }
-<COMMENT>.		{ }
-. 							{ pt("other"); }
+<COMMENT>.					{ }
+. 							{ pt("UNKNOWN"); }
 %%
 int main(int argc, char* argv[]) {
 	if (argc > 1)

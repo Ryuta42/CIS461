@@ -1,5 +1,5 @@
 [DEFAULT]
 name =  Miles Chew
 host =  ix.cs.uoregon.edu
-path = /home/faculty/michal/public
-repo = https://github.com/MichalYoung/proj-pageserverooo
+path = /home/users/mchew/cis461
+repo = https://github.com/Ryuta42/CIS461
