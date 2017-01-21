@@ -1,0 +1,84 @@
+/**
+ * A simple sample Quack program
+ */
+/*
+class Sample(x: Int) extends Obj {
+   this.x = x;
+   def foo() : Int {
+       return this.x;
+   }
+}
+class Pt(x: Int, y: Int) extends Obj {
+  this.x = x;
+  this.y = y;
+
+  def STR() : String {
+      return "(" + this.x.STR() + "," 
+                 + this.y.STR() + ")";
+  }
+
+  def PLUS(other: Pt) : Pt {
+      return Pt(this.x + other.x, this.y + other.y);
+  }
+
+  def _x() : Int {
+      return this.x;
+  }
+
+  def _y() : Int {
+      return this.y;
+  }
+
+class Rect(ll: Pt, ur: Pt) extends Obj {
+  this.ll = ll;
+  this.ur = ur;
+
+  def translate(delta: Pt) : Pt {
+      return Rect(ll+delta, ur+delta);
+  }
+
+  def STR() {
+      lr = Pt( this.ur._y(), this.ll._x() );  // lower right 
+      ul = Pt( this.ll._x(), this.ur._y() );  // upper left
+      return "(" + this.ll.STR() + ", "
+                 +      ul.STR() + "," 
+                 + this.ur.STR() + ","
+                 +      lr.STR() + ")";
+  }
+}
+
+class Square(ll: Pt, side: Int) extends Rect {
+  this.ll = ll;
+  this.ur = Pt(this.ll._x() + side, this.ll._y() + side);
+}
+  
+a_square = Square( Pt(3,3), 5 );
+a_square = a_square.translate( Pt(2,2) );
+a_square.PRINT();
+*/
+z = "strings can have \" escaped quotes and \. other \\\\ escapes"; 
+y = Sample(5);
+y.PRINT();
++ - < >
+/* Multiline
+comment
+1 2 3 4 5
+still commenting
+here.*/
+
+"""triple quote \t\nstring\\"""
+"""""""" 			// 8 quotes should be empty tstring followed by empty nstring
+"string that goes
+between lines"
+"swagswag\0 \t \n \m swag"
+"swagswag\0 \t \n \r swag"
+"swagswag\0 \e \n \r swag"
+
+class Swag(y:String) {
+	this.y = y;
+}
+x * y / z
+// coment
+//comet
+//still a comment// / / // \n 
+//more
