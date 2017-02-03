@@ -1,7 +1,7 @@
 /**
  * A simple sample Quack program
  */
-/*
+
 class Sample(x: Int) extends Obj {
    this.x = x;
    def foo() : Int {
@@ -28,6 +28,7 @@ class Pt(x: Int, y: Int) extends Obj {
   def _y() : Int {
       return this.y;
   }
+}
 
 class Rect(ll: Pt, ur: Pt) extends Obj {
   this.ll = ll;
@@ -55,30 +56,20 @@ class Square(ll: Pt, side: Int) extends Rect {
 a_square = Square( Pt(3,3), 5 );
 a_square = a_square.translate( Pt(2,2) );
 a_square.PRINT();
-*/
+
 z = "strings can have \" escaped quotes and \. other \\\\ escapes"; 
 y = Sample(5);
 y.PRINT();
-+ - < >
 /* Multiline
 comment
 1 2 3 4 5
 still commenting
 here.*/
 
-"""triple quote \t\nstring\\"""
-"""""""" 			// 8 quotes should be empty tstring followed by empty nstring
-"string that goes
-between lines"
-"swagswag\0 \t \n \m swag"
-"swagswag\0 \t \n \r swag"
-"swagswag\0 \e \n \r swag"
-
-class Swag(y:String) {
-	this.y = y;
-}
-x * y / z
-// coment
-//comet
-//still a comment// / / // \n 
-//more
+x = """triple quote \t\nstring\\""";
+y = """"""""; 			// 8 quotes should be empty tstring followed by empty nstring
+y = "string that goes";
+x = "between lines";
+x = "swagswag\0 \t \n \m swag";
+x = "swagswag\0 \t \n \r swag";
+x = "swagswag\0 \e \n \r swag";

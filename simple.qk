@@ -1,0 +1,14 @@
+class Sqr(x: Int) {
+	x.y:int = 44;
+	
+	def are(w: int, h: int) : int {
+		area;
+	}
+}
+class Circ(y: Str, z: Foo) extends Shape {
+	y;
+}
+class Triangle() {
+	tri;frog;
+}
+class Hex(){}

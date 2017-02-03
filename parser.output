@@ -1,0 +1,1850 @@
+Grammar
+
+    0 $accept: program $end
+
+    1 program: class_section statement_section
+
+    2 class_section: %empty
+    3              | classes
+
+    4 classes: classes class
+    5        | class
+
+    6 class: class_sig class_body
+
+    7 class_sig: CLASS IDENT '(' formal_arg_section ')' EXTENDS IDENT
+    8          | CLASS IDENT '(' formal_arg_section ')'
+
+    9 formal_arg_section: %empty
+   10                   | formal_args
+
+   11 formal_args: formal_args ',' formal_arg
+   12            | formal_arg
+
+   13 formal_arg: IDENT ':' IDENT
+
+   14 class_body: '{' statement_section method_section '}'
+
+   15 statement_section: %empty
+   16                  | statements
+
+   17 statements: statements statement
+   18           | statement
+
+   19 statement: IF r_exp statement_block elif_section else_section
+   20          | WHILE r_exp statement_block
+   21          | l_exp ':' IDENT '=' r_exp ';'
+   22          | l_exp '=' r_exp ';'
+   23          | r_exp ';'
+   24          | RETURN r_exp ';'
+   25          | RETURN ';'
+
+   26 l_exp: r_exp '.' IDENT
+   27      | IDENT
+
+   28 r_exp: INT
+   29      | STRING_LIT
+   30      | l_exp
+   31      | r_exp '+' r_exp
+   32      | r_exp '-' r_exp
+   33      | r_exp '*' r_exp
+   34      | r_exp '/' r_exp
+   35      | '(' r_exp ')'
+   36      | r_exp EQUALS r_exp
+   37      | r_exp ATMOST r_exp
+   38      | r_exp '<' r_exp
+   39      | r_exp ATLEAST r_exp
+   40      | r_exp '>' r_exp
+   41      | r_exp AND r_exp
+   42      | r_exp OR r_exp
+   43      | NOT r_exp
+   44      | r_exp '.' IDENT '(' actual_arg_section ')'
+   45      | IDENT '(' actual_arg_section ')'
+
+   46 actual_arg_section: %empty
+   47                   | actual_args
+
+   48 actual_args: actual_args ',' r_exp
+   49            | r_exp
+
+   50 elif_section: %empty
+   51             | elif_blocks
+
+   52 elif_blocks: elif_blocks elif_block
+   53            | elif_block
+
+   54 elif_block: ELIF r_exp statement_block
+
+   55 else_section: %empty
+   56             | else_block
+
+   57 else_block: ELSE r_exp statement_block
+
+   58 method_section: %empty
+   59               | methods
+
+   60 methods: methods method
+   61        | method
+
+   62 method: DEF IDENT '(' formal_arg_section ')' ':' IDENT statement_block
+
+   63 statement_block: '{' statement_section '}'
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 7 8 35 44 45 62
+')' (41) 7 8 35 44 45 62
+'*' (42) 33
+'+' (43) 31
+',' (44) 11 48
+'-' (45) 32
+'.' (46) 26 44
+'/' (47) 34
+':' (58) 13 21 62
+';' (59) 21 22 23 24 25
+'<' (60) 38
+'=' (61) 21 22
+'>' (62) 40
+'{' (123) 14 63
+'}' (125) 14 63
+error (256)
+INT (258) 28
+CLASS (259) 7 8
+DEF (260) 62
+IF (261) 19
+ELIF (262) 54
+ELSE (263) 57
+WHILE (264) 20
+EXTENDS (265) 7
+RETURN (266) 24 25
+STRING_LIT (267) 29
+IDENT (268) 7 8 13 21 26 27 44 45 62
+AND (269) 41
+OR (270) 42
+NOT (271) 43
+ATMOST (272) 37
+ATLEAST (273) 39
+EQUALS (274) 36
+
+
+Nonterminals, with rules where they appear
+
+$accept (35)
+    on left: 0
+program (36)
+    on left: 1, on right: 0
+class_section (37)
+    on left: 2 3, on right: 1
+classes (38)
+    on left: 4 5, on right: 3 4
+class (39)
+    on left: 6, on right: 4 5
+class_sig (40)
+    on left: 7 8, on right: 6
+formal_arg_section (41)
+    on left: 9 10, on right: 7 8 62
+formal_args (42)
+    on left: 11 12, on right: 10 11
+formal_arg (43)
+    on left: 13, on right: 11 12
+class_body (44)
+    on left: 14, on right: 6
+statement_section (45)
+    on left: 15 16, on right: 1 14 63
+statements (46)
+    on left: 17 18, on right: 16 17
+statement (47)
+    on left: 19 20 21 22 23 24 25, on right: 17 18
+l_exp (48)
+    on left: 26 27, on right: 21 22 30
+r_exp (49)
+    on left: 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45,
+    on right: 19 20 21 22 23 24 26 31 32 33 34 35 36 37 38 39 40 41
+    42 43 44 48 49 54 57
+actual_arg_section (50)
+    on left: 46 47, on right: 44 45
+actual_args (51)
+    on left: 48 49, on right: 47 48
+elif_section (52)
+    on left: 50 51, on right: 19
+elif_blocks (53)
+    on left: 52 53, on right: 51 52
+elif_block (54)
+    on left: 54, on right: 52 53
+else_section (55)
+    on left: 55 56, on right: 19
+else_block (56)
+    on left: 57, on right: 56
+method_section (57)
+    on left: 58 59, on right: 14
+methods (58)
+    on left: 60 61, on right: 59 60
+method (59)
+    on left: 62, on right: 60 61
+statement_block (60)
+    on left: 63, on right: 19 20 54 57 62
+
+
+State 0
+
+    0 $accept: . program $end
+
+    CLASS  shift, and go to state 1
+
+    $default  reduce using rule 2 (class_section)
+
+    program        go to state 2
+    class_section  go to state 3
+    classes        go to state 4
+    class          go to state 5
+    class_sig      go to state 6
+
+
+State 1
+
+    7 class_sig: CLASS . IDENT '(' formal_arg_section ')' EXTENDS IDENT
+    8          | CLASS . IDENT '(' formal_arg_section ')'
+
+    IDENT  shift, and go to state 7
+
+
+State 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 8
+
+
+State 3
+
+    1 program: class_section . statement_section
+
+    INT         shift, and go to state 9
+    IF          shift, and go to state 10
+    WHILE       shift, and go to state 11
+    RETURN      shift, and go to state 12
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    $default  reduce using rule 15 (statement_section)
+
+    statement_section  go to state 17
+    statements         go to state 18
+    statement          go to state 19
+    l_exp              go to state 20
+    r_exp              go to state 21
+
+
+State 4
+
+    3 class_section: classes .
+    4 classes: classes . class
+
+    CLASS  shift, and go to state 1
+
+    $default  reduce using rule 3 (class_section)
+
+    class      go to state 22
+    class_sig  go to state 6
+
+
+State 5
+
+    5 classes: class .
+
+    $default  reduce using rule 5 (classes)
+
+
+State 6
+
+    6 class: class_sig . class_body
+
+    '{'  shift, and go to state 23
+
+    class_body  go to state 24
+
+
+State 7
+
+    7 class_sig: CLASS IDENT . '(' formal_arg_section ')' EXTENDS IDENT
+    8          | CLASS IDENT . '(' formal_arg_section ')'
+
+    '('  shift, and go to state 25
+
+
+State 8
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 9
+
+   28 r_exp: INT .
+
+    $default  reduce using rule 28 (r_exp)
+
+
+State 10
+
+   19 statement: IF . r_exp statement_block elif_section else_section
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 27
+
+
+State 11
+
+   20 statement: WHILE . r_exp statement_block
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 28
+
+
+State 12
+
+   24 statement: RETURN . r_exp ';'
+   25          | RETURN . ';'
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+    ';'         shift, and go to state 29
+
+    l_exp  go to state 26
+    r_exp  go to state 30
+
+
+State 13
+
+   29 r_exp: STRING_LIT .
+
+    $default  reduce using rule 29 (r_exp)
+
+
+State 14
+
+   27 l_exp: IDENT .
+   45 r_exp: IDENT . '(' actual_arg_section ')'
+
+    '('  shift, and go to state 31
+
+    $default  reduce using rule 27 (l_exp)
+
+
+State 15
+
+   43 r_exp: NOT . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 32
+
+
+State 16
+
+   35 r_exp: '(' . r_exp ')'
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 33
+
+
+State 17
+
+    1 program: class_section statement_section .
+
+    $default  reduce using rule 1 (program)
+
+
+State 18
+
+   16 statement_section: statements .
+   17 statements: statements . statement
+
+    INT         shift, and go to state 9
+    IF          shift, and go to state 10
+    WHILE       shift, and go to state 11
+    RETURN      shift, and go to state 12
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    $default  reduce using rule 16 (statement_section)
+
+    statement  go to state 34
+    l_exp      go to state 20
+    r_exp      go to state 21
+
+
+State 19
+
+   18 statements: statement .
+
+    $default  reduce using rule 18 (statements)
+
+
+State 20
+
+   21 statement: l_exp . ':' IDENT '=' r_exp ';'
+   22          | l_exp . '=' r_exp ';'
+   30 r_exp: l_exp .
+
+    ':'  shift, and go to state 35
+    '='  shift, and go to state 36
+
+    $default  reduce using rule 30 (r_exp)
+
+
+State 21
+
+   23 statement: r_exp . ';'
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    ';'      shift, and go to state 49
+
+
+State 22
+
+    4 classes: classes class .
+
+    $default  reduce using rule 4 (classes)
+
+
+State 23
+
+   14 class_body: '{' . statement_section method_section '}'
+
+    INT         shift, and go to state 9
+    IF          shift, and go to state 10
+    WHILE       shift, and go to state 11
+    RETURN      shift, and go to state 12
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    $default  reduce using rule 15 (statement_section)
+
+    statement_section  go to state 50
+    statements         go to state 18
+    statement          go to state 19
+    l_exp              go to state 20
+    r_exp              go to state 21
+
+
+State 24
+
+    6 class: class_sig class_body .
+
+    $default  reduce using rule 6 (class)
+
+
+State 25
+
+    7 class_sig: CLASS IDENT '(' . formal_arg_section ')' EXTENDS IDENT
+    8          | CLASS IDENT '(' . formal_arg_section ')'
+
+    IDENT  shift, and go to state 51
+
+    $default  reduce using rule 9 (formal_arg_section)
+
+    formal_arg_section  go to state 52
+    formal_args         go to state 53
+    formal_arg          go to state 54
+
+
+State 26
+
+   30 r_exp: l_exp .
+
+    $default  reduce using rule 30 (r_exp)
+
+
+State 27
+
+   19 statement: IF r_exp . statement_block elif_section else_section
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    '{'      shift, and go to state 55
+
+    statement_block  go to state 56
+
+
+State 28
+
+   20 statement: WHILE r_exp . statement_block
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    '{'      shift, and go to state 55
+
+    statement_block  go to state 57
+
+
+State 29
+
+   25 statement: RETURN ';' .
+
+    $default  reduce using rule 25 (statement)
+
+
+State 30
+
+   24 statement: RETURN r_exp . ';'
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    ';'      shift, and go to state 58
+
+
+State 31
+
+   45 r_exp: IDENT '(' . actual_arg_section ')'
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    $default  reduce using rule 46 (actual_arg_section)
+
+    l_exp               go to state 26
+    r_exp               go to state 59
+    actual_arg_section  go to state 60
+    actual_args         go to state 61
+
+
+State 32
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   43      | NOT r_exp .
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+
+    $default  reduce using rule 43 (r_exp)
+
+
+State 33
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   35      | '(' r_exp . ')'
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    ')'      shift, and go to state 62
+
+
+State 34
+
+   17 statements: statements statement .
+
+    $default  reduce using rule 17 (statements)
+
+
+State 35
+
+   21 statement: l_exp ':' . IDENT '=' r_exp ';'
+
+    IDENT  shift, and go to state 63
+
+
+State 36
+
+   22 statement: l_exp '=' . r_exp ';'
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 64
+
+
+State 37
+
+   41 r_exp: r_exp AND . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 65
+
+
+State 38
+
+   42 r_exp: r_exp OR . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 66
+
+
+State 39
+
+   37 r_exp: r_exp ATMOST . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 67
+
+
+State 40
+
+   39 r_exp: r_exp ATLEAST . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 68
+
+
+State 41
+
+   36 r_exp: r_exp EQUALS . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 69
+
+
+State 42
+
+   26 l_exp: r_exp '.' . IDENT
+   44 r_exp: r_exp '.' . IDENT '(' actual_arg_section ')'
+
+    IDENT  shift, and go to state 70
+
+
+State 43
+
+   38 r_exp: r_exp '<' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 71
+
+
+State 44
+
+   40 r_exp: r_exp '>' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 72
+
+
+State 45
+
+   31 r_exp: r_exp '+' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 73
+
+
+State 46
+
+   32 r_exp: r_exp '-' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 74
+
+
+State 47
+
+   33 r_exp: r_exp '*' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 75
+
+
+State 48
+
+   34 r_exp: r_exp '/' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 76
+
+
+State 49
+
+   23 statement: r_exp ';' .
+
+    $default  reduce using rule 23 (statement)
+
+
+State 50
+
+   14 class_body: '{' statement_section . method_section '}'
+
+    DEF  shift, and go to state 77
+
+    $default  reduce using rule 58 (method_section)
+
+    method_section  go to state 78
+    methods         go to state 79
+    method          go to state 80
+
+
+State 51
+
+   13 formal_arg: IDENT . ':' IDENT
+
+    ':'  shift, and go to state 81
+
+
+State 52
+
+    7 class_sig: CLASS IDENT '(' formal_arg_section . ')' EXTENDS IDENT
+    8          | CLASS IDENT '(' formal_arg_section . ')'
+
+    ')'  shift, and go to state 82
+
+
+State 53
+
+   10 formal_arg_section: formal_args .
+   11 formal_args: formal_args . ',' formal_arg
+
+    ','  shift, and go to state 83
+
+    $default  reduce using rule 10 (formal_arg_section)
+
+
+State 54
+
+   12 formal_args: formal_arg .
+
+    $default  reduce using rule 12 (formal_args)
+
+
+State 55
+
+   63 statement_block: '{' . statement_section '}'
+
+    INT         shift, and go to state 9
+    IF          shift, and go to state 10
+    WHILE       shift, and go to state 11
+    RETURN      shift, and go to state 12
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    $default  reduce using rule 15 (statement_section)
+
+    statement_section  go to state 84
+    statements         go to state 18
+    statement          go to state 19
+    l_exp              go to state 20
+    r_exp              go to state 21
+
+
+State 56
+
+   19 statement: IF r_exp statement_block . elif_section else_section
+
+    ELIF  shift, and go to state 85
+
+    $default  reduce using rule 50 (elif_section)
+
+    elif_section  go to state 86
+    elif_blocks   go to state 87
+    elif_block    go to state 88
+
+
+State 57
+
+   20 statement: WHILE r_exp statement_block .
+
+    $default  reduce using rule 20 (statement)
+
+
+State 58
+
+   24 statement: RETURN r_exp ';' .
+
+    $default  reduce using rule 24 (statement)
+
+
+State 59
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+   49 actual_args: r_exp .
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+
+    $default  reduce using rule 49 (actual_args)
+
+
+State 60
+
+   45 r_exp: IDENT '(' actual_arg_section . ')'
+
+    ')'  shift, and go to state 89
+
+
+State 61
+
+   47 actual_arg_section: actual_args .
+   48 actual_args: actual_args . ',' r_exp
+
+    ','  shift, and go to state 90
+
+    $default  reduce using rule 47 (actual_arg_section)
+
+
+State 62
+
+   35 r_exp: '(' r_exp ')' .
+
+    $default  reduce using rule 35 (r_exp)
+
+
+State 63
+
+   21 statement: l_exp ':' IDENT . '=' r_exp ';'
+
+    '='  shift, and go to state 91
+
+
+State 64
+
+   22 statement: l_exp '=' r_exp . ';'
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    ';'      shift, and go to state 92
+
+
+State 65
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   41      | r_exp AND r_exp .
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+
+    $default  reduce using rule 41 (r_exp)
+
+
+State 66
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   42      | r_exp OR r_exp .
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+
+    $default  reduce using rule 42 (r_exp)
+
+
+State 67
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   37      | r_exp ATMOST r_exp .
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '+'  shift, and go to state 45
+    '-'  shift, and go to state 46
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 37 (r_exp)
+
+
+State 68
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   39      | r_exp ATLEAST r_exp .
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '+'  shift, and go to state 45
+    '-'  shift, and go to state 46
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 39 (r_exp)
+
+
+State 69
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   36      | r_exp EQUALS r_exp .
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '+'  shift, and go to state 45
+    '-'  shift, and go to state 46
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 36 (r_exp)
+
+
+State 70
+
+   26 l_exp: r_exp '.' IDENT .
+   44 r_exp: r_exp '.' IDENT . '(' actual_arg_section ')'
+
+    '('  shift, and go to state 93
+
+    $default  reduce using rule 26 (l_exp)
+
+
+State 71
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   38      | r_exp '<' r_exp .
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '+'  shift, and go to state 45
+    '-'  shift, and go to state 46
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 38 (r_exp)
+
+
+State 72
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   40      | r_exp '>' r_exp .
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '+'  shift, and go to state 45
+    '-'  shift, and go to state 46
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 40 (r_exp)
+
+
+State 73
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   31      | r_exp '+' r_exp .
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 31 (r_exp)
+
+
+State 74
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   32      | r_exp '-' r_exp .
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    '*'  shift, and go to state 47
+    '/'  shift, and go to state 48
+
+    $default  reduce using rule 32 (r_exp)
+
+
+State 75
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   33      | r_exp '*' r_exp .
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    $default  reduce using rule 33 (r_exp)
+
+
+State 76
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   34      | r_exp '/' r_exp .
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    $default  reduce using rule 34 (r_exp)
+
+
+State 77
+
+   62 method: DEF . IDENT '(' formal_arg_section ')' ':' IDENT statement_block
+
+    IDENT  shift, and go to state 94
+
+
+State 78
+
+   14 class_body: '{' statement_section method_section . '}'
+
+    '}'  shift, and go to state 95
+
+
+State 79
+
+   59 method_section: methods .
+   60 methods: methods . method
+
+    DEF  shift, and go to state 77
+
+    $default  reduce using rule 59 (method_section)
+
+    method  go to state 96
+
+
+State 80
+
+   61 methods: method .
+
+    $default  reduce using rule 61 (methods)
+
+
+State 81
+
+   13 formal_arg: IDENT ':' . IDENT
+
+    IDENT  shift, and go to state 97
+
+
+State 82
+
+    7 class_sig: CLASS IDENT '(' formal_arg_section ')' . EXTENDS IDENT
+    8          | CLASS IDENT '(' formal_arg_section ')' .
+
+    EXTENDS  shift, and go to state 98
+
+    $default  reduce using rule 8 (class_sig)
+
+
+State 83
+
+   11 formal_args: formal_args ',' . formal_arg
+
+    IDENT  shift, and go to state 51
+
+    formal_arg  go to state 99
+
+
+State 84
+
+   63 statement_block: '{' statement_section . '}'
+
+    '}'  shift, and go to state 100
+
+
+State 85
+
+   54 elif_block: ELIF . r_exp statement_block
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 101
+
+
+State 86
+
+   19 statement: IF r_exp statement_block elif_section . else_section
+
+    ELSE  shift, and go to state 102
+
+    $default  reduce using rule 55 (else_section)
+
+    else_section  go to state 103
+    else_block    go to state 104
+
+
+State 87
+
+   51 elif_section: elif_blocks .
+   52 elif_blocks: elif_blocks . elif_block
+
+    ELIF  shift, and go to state 85
+
+    $default  reduce using rule 51 (elif_section)
+
+    elif_block  go to state 105
+
+
+State 88
+
+   53 elif_blocks: elif_block .
+
+    $default  reduce using rule 53 (elif_blocks)
+
+
+State 89
+
+   45 r_exp: IDENT '(' actual_arg_section ')' .
+
+    $default  reduce using rule 45 (r_exp)
+
+
+State 90
+
+   48 actual_args: actual_args ',' . r_exp
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 106
+
+
+State 91
+
+   21 statement: l_exp ':' IDENT '=' . r_exp ';'
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 107
+
+
+State 92
+
+   22 statement: l_exp '=' r_exp ';' .
+
+    $default  reduce using rule 22 (statement)
+
+
+State 93
+
+   44 r_exp: r_exp '.' IDENT '(' . actual_arg_section ')'
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    $default  reduce using rule 46 (actual_arg_section)
+
+    l_exp               go to state 26
+    r_exp               go to state 59
+    actual_arg_section  go to state 108
+    actual_args         go to state 61
+
+
+State 94
+
+   62 method: DEF IDENT . '(' formal_arg_section ')' ':' IDENT statement_block
+
+    '('  shift, and go to state 109
+
+
+State 95
+
+   14 class_body: '{' statement_section method_section '}' .
+
+    $default  reduce using rule 14 (class_body)
+
+
+State 96
+
+   60 methods: methods method .
+
+    $default  reduce using rule 60 (methods)
+
+
+State 97
+
+   13 formal_arg: IDENT ':' IDENT .
+
+    $default  reduce using rule 13 (formal_arg)
+
+
+State 98
+
+    7 class_sig: CLASS IDENT '(' formal_arg_section ')' EXTENDS . IDENT
+
+    IDENT  shift, and go to state 110
+
+
+State 99
+
+   11 formal_args: formal_args ',' formal_arg .
+
+    $default  reduce using rule 11 (formal_args)
+
+
+State 100
+
+   63 statement_block: '{' statement_section '}' .
+
+    $default  reduce using rule 63 (statement_block)
+
+
+State 101
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+   54 elif_block: ELIF r_exp . statement_block
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    '{'      shift, and go to state 55
+
+    statement_block  go to state 111
+
+
+State 102
+
+   57 else_block: ELSE . r_exp statement_block
+
+    INT         shift, and go to state 9
+    STRING_LIT  shift, and go to state 13
+    IDENT       shift, and go to state 14
+    NOT         shift, and go to state 15
+    '('         shift, and go to state 16
+
+    l_exp  go to state 26
+    r_exp  go to state 112
+
+
+State 103
+
+   19 statement: IF r_exp statement_block elif_section else_section .
+
+    $default  reduce using rule 19 (statement)
+
+
+State 104
+
+   56 else_section: else_block .
+
+    $default  reduce using rule 56 (else_section)
+
+
+State 105
+
+   52 elif_blocks: elif_blocks elif_block .
+
+    $default  reduce using rule 52 (elif_blocks)
+
+
+State 106
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+   48 actual_args: actual_args ',' r_exp .
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+
+    $default  reduce using rule 48 (actual_args)
+
+
+State 107
+
+   21 statement: l_exp ':' IDENT '=' r_exp . ';'
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    ';'      shift, and go to state 113
+
+
+State 108
+
+   44 r_exp: r_exp '.' IDENT '(' actual_arg_section . ')'
+
+    ')'  shift, and go to state 114
+
+
+State 109
+
+   62 method: DEF IDENT '(' . formal_arg_section ')' ':' IDENT statement_block
+
+    IDENT  shift, and go to state 51
+
+    $default  reduce using rule 9 (formal_arg_section)
+
+    formal_arg_section  go to state 115
+    formal_args         go to state 53
+    formal_arg          go to state 54
+
+
+State 110
+
+    7 class_sig: CLASS IDENT '(' formal_arg_section ')' EXTENDS IDENT .
+
+    $default  reduce using rule 7 (class_sig)
+
+
+State 111
+
+   54 elif_block: ELIF r_exp statement_block .
+
+    $default  reduce using rule 54 (elif_block)
+
+
+State 112
+
+   26 l_exp: r_exp . '.' IDENT
+   31 r_exp: r_exp . '+' r_exp
+   32      | r_exp . '-' r_exp
+   33      | r_exp . '*' r_exp
+   34      | r_exp . '/' r_exp
+   36      | r_exp . EQUALS r_exp
+   37      | r_exp . ATMOST r_exp
+   38      | r_exp . '<' r_exp
+   39      | r_exp . ATLEAST r_exp
+   40      | r_exp . '>' r_exp
+   41      | r_exp . AND r_exp
+   42      | r_exp . OR r_exp
+   44      | r_exp . '.' IDENT '(' actual_arg_section ')'
+   57 else_block: ELSE r_exp . statement_block
+
+    AND      shift, and go to state 37
+    OR       shift, and go to state 38
+    ATMOST   shift, and go to state 39
+    ATLEAST  shift, and go to state 40
+    EQUALS   shift, and go to state 41
+    '.'      shift, and go to state 42
+    '<'      shift, and go to state 43
+    '>'      shift, and go to state 44
+    '+'      shift, and go to state 45
+    '-'      shift, and go to state 46
+    '*'      shift, and go to state 47
+    '/'      shift, and go to state 48
+    '{'      shift, and go to state 55
+
+    statement_block  go to state 116
+
+
+State 113
+
+   21 statement: l_exp ':' IDENT '=' r_exp ';' .
+
+    $default  reduce using rule 21 (statement)
+
+
+State 114
+
+   44 r_exp: r_exp '.' IDENT '(' actual_arg_section ')' .
+
+    $default  reduce using rule 44 (r_exp)
+
+
+State 115
+
+   62 method: DEF IDENT '(' formal_arg_section . ')' ':' IDENT statement_block
+
+    ')'  shift, and go to state 117
+
+
+State 116
+
+   57 else_block: ELSE r_exp statement_block .
+
+    $default  reduce using rule 57 (else_block)
+
+
+State 117
+
+   62 method: DEF IDENT '(' formal_arg_section ')' . ':' IDENT statement_block
+
+    ':'  shift, and go to state 118
+
+
+State 118
+
+   62 method: DEF IDENT '(' formal_arg_section ')' ':' . IDENT statement_block
+
+    IDENT  shift, and go to state 119
+
+
+State 119
+
+   62 method: DEF IDENT '(' formal_arg_section ')' ':' IDENT . statement_block
+
+    '{'  shift, and go to state 55
+
+    statement_block  go to state 120
+
+
+State 120
+
+   62 method: DEF IDENT '(' formal_arg_section ')' ':' IDENT statement_block .
+
+    $default  reduce using rule 62 (method)
