@@ -46,16 +46,16 @@ extern int yydebug;
   enum yytokentype
   {
     INT_LIT = 258,
-    CLASS = 259,
-    DEF = 260,
-    IF = 261,
-    ELIF = 262,
-    ELSE = 263,
-    WHILE = 264,
-    EXTENDS = 265,
-    RETURN = 266,
-    STRING_LIT = 267,
-    IDENT = 268,
+    IDENT = 259,
+    STRING_LIT = 260,
+    CLASS = 261,
+    DEF = 262,
+    IF = 263,
+    ELIF = 264,
+    ELSE = 265,
+    WHILE = 266,
+    EXTENDS = 267,
+    RETURN = 268,
     AND = 269,
     OR = 270,
     NOT = 271,
@@ -71,12 +71,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 17 "parser.y" /* yacc.c:1909  */
+#line 28 "parser.y" /* yacc.c:1909  */
 
+	Node* node;
 	int ival;
 	char *sval;
 
-#line 80 "parser.tab.h" /* yacc.c:1909  */
+#line 81 "parser.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
