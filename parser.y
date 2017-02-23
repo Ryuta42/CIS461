@@ -18,41 +18,41 @@ extern "C" int yytext;
 FILE* file;
 char* fn;
 int nerrors = 0;
+AST ast;
 
 void yyerror(const char *s);
 
 %}
-%token INT_LIT
-%token IDENT STRING_LIT
-
 %union {
 	Node* node;
 	int ival;
 	char *sval;
 }
-%token <sval> CLASS DEF IF ELIF ELSE WHILE EXTENDS RETURN AND OR NOT ATMOST ATLEAST EQUALS UNKNOWN
-
-
 %define parse.error verbose
-%type <node> program class_section classes class extends class_sig formal_arg_section formal_args formal_arg class_body
+%type <node> program class_section classes class class_sig formal_arg_section formal_args formal_arg class_body
 %type <node> statement_section statement_block statements statement l_exp r_exp actual_arg_section actual_args
 %type <node> elif_section elif_blocks elif_block else_section else_block method_section methods method return_type
 %type <ival> INT_LIT
-%type <sval> IDENT STRING_LIT
+%type <sval> extends IDENT STRING_LIT
+%token INT_LIT
+%token IDENT STRING_LIT
+%token <sval> CLASS DEF IF ELIF ELSE WHILE EXTENDS RETURN AND OR NOT ATMOST ATLEAST EQUALS UNKNOWN
 
 %left '.'
 %left AND OR NOT
 %left '<' ATMOST '>' ATLEAST EQUALS
 %left '+' '-'
 %left '*' '/'
-
 %%
 program:
 	class_section statement_section
 	{	$$ = new Node("program", "program");
 		$$->addChild($1);
 		$$->addChild($2);
-		$$->print(0);
+
+		ast.root = $$;
+		ast.processClasses();
+		//ast.printTree();
 	}
 	;
 
@@ -78,17 +78,17 @@ classes:
 
 class:
 	class_sig class_body
-	{	$$ = new Node("class", "class");
+	{	$$ = new ClassNode($1->label, $1->type);
 		$$->addChild($1);
 		$$->addChild($2);
+		ast.addClass($$);
 	}
 	;
 
 class_sig:
 	CLASS IDENT formal_arg_section extends
-	{	$$ = new Node("class_sig", "class_sig");
+	{	$$ = new Node($2, $4);
 		$$->addChild($3);
-		$$->addChild($4);
 	}
   | CLASS error extends
   	{	nerrors++;
@@ -97,10 +97,10 @@ class_sig:
 
 extends:
 	%empty
-	{	$$ = new Node("extends", "extends");
+	{	$$ = strdup("Obj");
 	}
   | EXTENDS IDENT
-	{	$$ = new Node($2, "extends");
+	{	$$ = $2;
  	}
 	;
 
@@ -185,7 +185,7 @@ statement:
 		$$->addChild($1);
 		$$->addChild($5);
 	}
-  | l_exp '='	r_exp ';'
+  | l_exp '=' r_exp ';'
 	{	$$ = new Node("assignment", "statement");
 		$$->addChild($1);
 		$$->addChild($3);
@@ -219,8 +219,7 @@ l_exp:
 
 r_exp:
 	INT_LIT
-	{	$$ = new Node("INT_LIT", "r_exp");
-		//$$->addChild($1);
+	{	$$ = new IntNode($1, "r_exp (int_lit)");
 	}
   | STRING_LIT
 	{	$$ = new Node($1, "r_exp (String_lit)");
@@ -437,7 +436,6 @@ int main(int argc, char* argv[])
 	{	yyparse();
 	} while (!feof(yyin));
 
-	delete(file);
 	return 0;
 }
 
