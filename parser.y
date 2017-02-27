@@ -51,8 +51,6 @@ program:
 		$$->addChild($2);
 
 		ast.root = $$;
-		ast.processClasses();
-		//ast.printTree();
 	}
 	;
 
@@ -61,7 +59,7 @@ class_section:
 	{	$$ = new Node("EMPTY", "class section");
 	}
   | classes
-  	{	$$ = $1;
+	{	$$ = $1;
 	}
 	;
 
@@ -72,7 +70,7 @@ classes:
 	}
   | class
 	{	$$ = new Node("classes", "classes");
-	  	$$->addChild($1);
+		$$->addChild($1);
 	}
 	;
 
@@ -81,6 +79,14 @@ class:
 	{	$$ = new ClassNode($1->label, $1->type);
 		$$->addChild($1);
 		$$->addChild($2);
+
+		//(static_cast<ClassNode*>$$)->constructors["x"] = "int";
+/*
+		for (auto &it : $1->children.begin()->children)
+		{	(static_cast<ClassNode*>$$)->constructors[it->label] = it->type;
+			//cout << $$->label << " " << it->label << " " << it->type << endl;
+		}
+*/
 		ast.addClass($$);
 	}
 	;
@@ -91,7 +97,7 @@ class_sig:
 		$$->addChild($3);
 	}
   | CLASS error extends
-  	{	nerrors++;
+	{	nerrors++;
 	}
 	;
 
@@ -101,7 +107,7 @@ extends:
 	}
   | EXTENDS IDENT
 	{	$$ = $2;
- 	}
+	}
 	;
 
 formal_arg_section:
@@ -109,23 +115,21 @@ formal_arg_section:
 	{	$$ = new Node("EMPTY", "formal_arg_section");
 	}
   | '(' formal_args ')'
- 	{	$$ = new Node("formal_arg_section", "formal_arg_section");
-  		$$->addChild($2);
+	{	$$ = $2;
 	}
   | '(' error ')'
-    { 	$$ = new Node("ERROR", "formal_arg_section");
+	{ 	$$ = new Node("ERROR", "formal_arg_section");
 		nerrors++;
 	}
 	;
 
 formal_args:
 	formal_args ',' formal_arg
-	{	$$ = new Node("formal_args", "formal_args");
-		$$->addChild($1);
+	{	$$ = $1;
 		$$->addChild($3);
 	}
   | formal_arg
-  	{	$$ = new Node("formal_args", "formal_args");
+	{	$$ = new Node("formal_args", "formal_args");
 		$$->addChild($1);
 	}
 	;
@@ -142,7 +146,7 @@ class_body:
 		$$->addChild($3);
 	}
   | '{' error '}'
-    { 	$$ = new Node("ERROR", "class_body");
+	{ 	$$ = new Node("ERROR", "class_body");
 		nerrors++;
 	}
 	;
@@ -152,7 +156,7 @@ statement_section:
 	{	$$ = new Node("EMPTY", "statement_section");
 	}
   | statements
-  	{	$$ = $1;
+	{	$$ = $1;
 	}
 	;
 
@@ -162,8 +166,7 @@ statements:
 		$$->addChild($2);
 	}
 	| statement
-	{	$$ = new Node("statements", "statements");
-		$$->addChild($1);
+	{	$$ = $1;
 	}
 	;
 
@@ -315,7 +318,7 @@ actual_arg_section:
 		$$->addChild($2);
 	}
   | '(' error ')'
-    { 	$$ = new Node("ERROR", "actual_arg_section");
+	{ 	$$ = new Node("ERROR", "actual_arg_section");
 		nerrors++;
 	}
 	;
@@ -415,7 +418,7 @@ statement_block:
 		$$->addChild($2);
 	}
   | '{' error '}'
-    { 	$$ = new Node("ERROR", "statement_block");
+	{ 	$$ = new Node("ERROR", "statement_block");
 		nerrors++;
 	}
 	;
@@ -435,6 +438,11 @@ int main(int argc, char* argv[])
 	do
 	{	yyparse();
 	} while (!feof(yyin));
+
+	// Work with AST
+	ast.processClasses();
+	//ast.printTree();
+
 
 	return 0;
 }

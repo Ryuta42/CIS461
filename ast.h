@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <map>
+#include <stack>
 using namespace std;
 
 class Node {
@@ -27,11 +29,21 @@ public:
     }
 };
 
-class IntNode : public Node{
+class TypedNode : public Node{
+public:
+    string valueType;
+
+    TypedNode() {}
+    TypedNode(string label, string valueType, string type): Node::Node(label, type)
+    {   this->valueType = valueType;
+    }
+};
+
+class IntNode : public TypedNode{
 public:
     int value = 0;
 
-    IntNode(int value, string type) : Node::Node("INT_LIT", type)
+    IntNode(int value, string type) : TypedNode::TypedNode(to_string(value), type, "INT_LIT")
     {   this->value = value;
     }
 };
@@ -39,6 +51,7 @@ public:
 class ClassNode : public Node{
 public:
     string extends;
+    map<string, string> constructors;
 
     ClassNode() {}
     ClassNode(string label, string extends) : Node(label, "class")
@@ -46,40 +59,78 @@ public:
     }
 };
 
+class MethodListNode : public Node{
+public:
+    vector<Node*> methodVector;
+
+
+};
+
 class CTNode{
 public:
     string label;
     string ext;
+    CTNode* parent;
     vector<CTNode*> children;
+    //map<string, string> constructors;
 
     CTNode(){}
     CTNode(string label, string ext)
     {   this->label = label;
         this->ext = ext;
+        if (ext == "-")
+            this->parent = new CTNode("-", "--");
     }
+    /*
+    CTNode(string label, string ext, map<string, string> constructors)
+    {   this->label = label;
+        this->ext = ext;
+        this->constructors = constructors;
+    }
+    */
     ~CTNode()
     {   for (auto &it: children)     if(it) delete(it);
     }
     void addChild(CTNode* n)
     {   children.emplace_back(n);
+        n->parent = this;
     }
     void print(int depth)
     {   for (int i = depth; i > 0; i--)      cout << "|   ";
         cout << ext << "->" << label << endl;
+        //for (auto &it : constructors)
+        //    cout << it.first << ": " << it.second << endl;
         for (auto &it : children)           it->print(depth+1);         // recursively print children
+    }
+    stack<string> getAncestry()
+    {   stack<string> anc;
+        CTNode* curr = this;
+        while (curr->label != "-")
+        {   anc.push(curr->label);
+            curr = curr->parent;
+        }
+        return anc;
     }
 };
 
 class ClassTree{
 public:
     CTNode* root;
+    bool processed;
 
     ClassTree()
-    {   root = new CTNode("Obj", "-");
+    {   processed = false;
+        root = new CTNode("Obj", "-");
         addToTree(new ClassNode("String", "Obj"));
         addToTree(new ClassNode("Int", "Obj"));
         addToTree(new ClassNode("Nothing", "Obj"));
         addToTree(new ClassNode("Boolean", "Obj"));
+
+        addToTree(new ClassNode("Even", "Int"));
+        addToTree(new ClassNode("PerfectSquare", "Even"));
+        addToTree(new ClassNode("Odd", "Int"));
+        addToTree(new ClassNode("Prime", "Odd"));
+        addToTree(new ClassNode("CoolPrime", "Prime"));
     }
     ~ClassTree()
     {   delete(root);
@@ -104,13 +155,44 @@ public:
     void printTree()
     {   root->print(0);
     }
+    string lca(string c1, string c2)
+    {   string result = "BOTTOM";
+        if (!processed)
+        {   cerr << "Classes have not yet processed" << endl;
+            return result;
+        }
+        CTNode *n1, *n2;
+        if (!(n1 = searchTree(c1)))
+        {   cerr << "Class '" << c1 << "' has not been defined" << endl;
+            return result;
+        }
+        if (!(n2 = searchTree(c2)))
+        {   cerr << "Class '" << c2 << "' has not been defined" << endl;
+            return result;
+        }
+        stack<string> s1 = n1->getAncestry();
+        stack<string> s2 = n2->getAncestry();
+        while(s1.top() == s2.top())
+        {   result = s1.top();
+            s1.pop();
+            s2.pop();
+            if (s1.empty() || s2.empty())   break;
+        }
+        return result;
+    }
+    bool isSubclass(string sub, string super)
+    {
+        return false;
+    }
 };
 
 class AST{
-public:
-    Node* root;
+private:
     ClassTree classTree;
     vector<ClassNode*> classVector;
+
+public:
+    Node* root;
 
     void addClass(Node* n)
     {   classVector.emplace_back(static_cast<ClassNode*>(n));
@@ -134,8 +216,8 @@ public:
                 cout << it->label << " (extends " << it->extends << ")" << endl;
             return false;
         }
-        //printClasses();
-        cout << "Class hierarchy is well formed!" << endl;
+        classTree.processed = true;
+        printClasses();
         return true;
     }
     void printClasses()
@@ -144,5 +226,8 @@ public:
     }
     void printTree()
     {   root->print(0);
+    }
+    string lca(string c1, string c2)
+    {   return classTree.lca(c1, c2);
     }
 };
