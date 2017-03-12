@@ -25,15 +25,21 @@ void yyerror(const char *s);
 %}
 %union {
 	Node* node;
+	NExpression* expr;
+	NStatement* stmt;
+	NClass* clas;
 	int ival;
-	char *sval;
+	string *sval;
 }
 %define parse.error verbose
-%type <node> program class_section classes class class_sig formal_arg_section formal_args formal_arg class_body extends
-%type <node> statement_section statement_block statements statement LEX REX actual_arg_section actual_args
-%type <node> elif_section elif_blocks elif_block else_section else_block method_section methods method return_type
+%type <node> program class_section classes class_sig formal_arg_section formal_args formal_arg class_body extends
+%type <node> statement_section statement_block statements l_exp actual_arg_section actual_args
+%type <node> elif_section elif_blocks elif_block else_section else_block method_section methods method
+%type <expr> r_exp
+%type <stmt> statement
+%type <clas> class
 %type <ival> INT_LIT
-%type <sval> IDENT STRING_LIT
+%type <sval> IDENT STRING_LIT return_type
 %token INT_LIT
 %token IDENT STRING_LIT
 %token <sval> CLASS DEF IF ELIF ELSE WHILE EXTENDS RETURN AND OR NOT ATMOST ATLEAST EQUALS UNKNOWN
@@ -69,15 +75,14 @@ classes:
 		$$->addChild($2);
 	}
   | class
-	{	$$ = new Node("classes", NCLASS_SEC, yylineno);
+	{	$$ = new Node("classes", NCLASS_SEC);
 		$$->addChild($1);
 	}
 	;
 
 class:
 	class_sig class_body
-	{	$$ = new ClassNode($1->label, $1->ch.back()->label, yylineno);
-		// do something with $1->type
+	{	$$ = new NClass($1->label, $1->ch.back()->label, yylineno);
 		$$->addChild($1);
 		$$->addChild($2);
 		ast.addClass($$);
@@ -86,7 +91,7 @@ class:
 
 class_sig:
 	CLASS IDENT formal_arg_section extends
-	{	$$ = new Node($2, NCLASS_SIG, yylineno);
+	{	$$ = new Node(*$2, NCLASS_SIG, yylineno);
 		$$->addChild($3);
 		$$->addChild($4);
 	}
@@ -97,10 +102,10 @@ class_sig:
 
 extends:
 	%empty
-	{	$$ = new Node("Obj", NEXTENDS, yylineno);
+	{	$$ = new Node("Obj", "Obj", NEXTENDS, yylineno);
 	}
   | EXTENDS IDENT
-	{	$$ = new Node($2, NEXTENDS, yylineno);
+	{	$$ = new Node(*$2, *$2, NEXTENDS, yylineno);
 	}
 	;
 
@@ -129,7 +134,7 @@ formal_args:
 	;
 
 formal_arg: IDENT ':' IDENT
-	{	$$ = new TypedNode($1, $3, NFORMAL_ARG, yylineno);
+	{	$$ = new Node(*$1, *$3, NFORMAL_ARG, yylineno);
 	}
 	;
 
@@ -177,141 +182,141 @@ statements:
 	;
 
 statement:
-	IF REX statement_block elif_section else_section
-	{	$$ = new Node("IF statement", NSTIF, yylineno);
+	IF r_exp statement_block elif_section else_section
+	{	$$ = new NStatement("IF statement", NSTIF, yylineno);
 		$$->addChild($2);
 		$$->addChild($3);
 		$$->addChild($4);
 		$$->addChild($5);
 	}
-  | WHILE REX statement_block
-	{	$$ = new Node("while loop", NSTWHILE, yylineno);
+  | WHILE r_exp statement_block
+	{	$$ = new NStatement("while loop", NSTWHILE, yylineno);
 		$$->addChild($2);
 		$$->addChild($3);
 	}
-  | LEX ':' IDENT '=' REX ';'
-	{	$$ = new Node($3, NSTASSIGN, yylineno);
+  | l_exp ':' IDENT '=' r_exp ';'
+	{	$$ = new NStatement(*$3, NSTASSIGN, yylineno);
 		$$->addChild($1);
 		$$->addChild($5);
 	}
-  | LEX '=' REX ';'
-	{	$$ = new Node("assignment", NSTASSIGN, yylineno);
+  | l_exp '=' r_exp ';'
+	{	$$ = new NStatement("assignment", NSTASSIGN, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX ';'
-	{	$$ = new Node("statement", NSTATEMENT, yylineno);
+  | r_exp ';'
+	{	$$ = new NStatement("statement", NSTATEMENT, yylineno);
 		$$->addChild($1);
 	}
-  | RETURN REX ';'
-	{	$$ = new Node("RETURN", NSTRETURN, yylineno);
+  | RETURN r_exp ';'
+	{	$$ = new NStatement("return stmt", NSTRETURN, yylineno);
 		$$->addChild($2);
 	}
   | RETURN ';'
-	{	$$ = new Node("RETURN", NSTRETURN, yylineno);
+	{	$$ = new NStatement("return blank", NSTRETURN, yylineno);
 	}
   | error ';'
-	{	$$ = new Node("ERROR", NSTATEMENT, yylineno);
+	{	$$ = new NStatement("ERROR", NSTATEMENT, yylineno);
 		nerrors++;
 	}
 	;
 
-LEX:
-	REX '.' IDENT
-	{	$$ = new Node($3, NLEXQ, yylineno);
+l_exp:
+	r_exp '.' IDENT
+	{	$$ = new Node(*$3, NLEXQ, yylineno);
 		$$->addChild($1);
 	}
   | IDENT
-	{	$$ = new Node($1, NLEX, yylineno);
+	{	$$ = new Node(*$1, NLEX, yylineno);
 	}
 	;
 
-REX:
+r_exp:
 	INT_LIT
-	{	$$ = new IntNode($1, yylineno);
+	{	$$ = new NInt($1, yylineno);
 	}
   | STRING_LIT
-	{	$$ = new Node($1, NREX, yylineno);
+	{	$$ = new NString(*$1, yylineno);
 	}
-  | LEX
-	{	$$ = new Node("Left expression", NREX, yylineno);
+  | l_exp
+	{	$$ = new NExpression("Left expression", NLEX, yylineno);
 		$$->addChild($1);
 	}
-  | REX '+' REX
-	{	$$ = new Node("Add", NREX, yylineno);
-		$$->addChild($1);
-		$$->addChild($3);
-	}
-  | REX '-' REX
-	{	$$ = new Node("Subtract", NREX, yylineno);
+  | r_exp '+' r_exp
+	{	$$ = new NExpression("Add", NEXADD, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX '*' REX
-	{	$$ = new Node("Multiply", NREX, yylineno);
+  | r_exp '-' r_exp
+	{	$$ = new NExpression("Subtract", NEXSUB, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX '/' REX
-	{	$$ = new Node("Divide", NREX, yylineno);
+  | r_exp '*' r_exp
+	{	$$ = new NExpression("Multiply", NEXMUL, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX EQUALS REX
-	{	$$ = new Node("==", NREX, yylineno);
+  | r_exp '/' r_exp
+	{	$$ = new NExpression("Divide", NEXDIV, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX ATMOST REX
-	{	$$ = new Node("<=", NREX, yylineno);
+  | r_exp EQUALS r_exp
+	{	$$ = new NExpression("==", NEXEQ, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX '<' REX
-	{	$$ = new Node("<", NREX, yylineno);
+  | r_exp ATMOST r_exp
+	{	$$ = new NExpression("<=", NEXMOST, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX ATLEAST REX
-	{	$$ = new Node(">=", NREX, yylineno);
+  | r_exp '<' r_exp
+	{	$$ = new NExpression("<", NEXLESS, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX '>' REX
-	{	$$ = new Node(">", NREX, yylineno);
+  | r_exp ATLEAST r_exp
+	{	$$ = new NExpression(">=", NEXLEAST, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX AND REX
-	{	$$ = new Node("AND", NREX, yylineno);
+  | r_exp '>' r_exp
+	{	$$ = new NExpression(">", NEXGREATER, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | REX OR REX
-	{	$$ = new Node("OR", NREX, yylineno);
+  | r_exp AND r_exp
+	{	$$ = new NExpression("AND", NEXAND, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | NOT REX
-	{	$$ = new Node("NOT", NREX, yylineno);
+  | r_exp OR r_exp
+	{	$$ = new NExpression("OR", NEXOR, yylineno);
+		$$->addChild($1);
+		$$->addChild($3);
+	}
+  | NOT r_exp
+	{	$$ = new NExpression("NOT", NEXNOT, yylineno);
 		$$->addChild($2);
 	}
-  | REX '.' IDENT actual_arg_section
-	{	$$ = new Node("method call", NREX, yylineno);
+  | r_exp '.' IDENT actual_arg_section
+	{	$$ = new NExpression(*$3, NEXMETH, yylineno);
 		$$->addChild($1);
 		$$->addChild($4);
 	}
   | IDENT actual_arg_section
-	{	$$ = new Node($1, NREXCC, yylineno);
+	{	$$ = new NExpression("class", *$1, NEXCLASS, yylineno);
 		$$->addChild($2);
 	}
-  | '(' REX ')'
-	{	$$ = new Node("REX", NREX, yylineno);
+  | '(' r_exp ')'
+	{	$$ = new NExpression("REX", NEXPAR, yylineno);
 		$$->addChild($2);
 	}
   | '(' error ')'
 	{ 	nerrors++;
-		$$ = new Node("ERROR", NREX, yylineno);
+		$$ = new NExpression("ERROR", NEXERR, yylineno);
 	}
 	;
 
@@ -329,11 +334,11 @@ actual_arg_section:
 	;
 
 actual_args:
-	actual_args ',' REX
+	actual_args ',' r_exp
 	{	$$ = $1;
 		$$->addChild($3);
 	}
-  | REX
+  | r_exp
 	{	$$ = new Node("actual_arg_section", NACTUAL_ARG_SEC, yylineno);
 		$$->addChild($1);
 	}
@@ -361,7 +366,7 @@ elif_blocks:
 	}
 	;
 
-elif_block:	ELIF REX statement_block
+elif_block:	ELIF r_exp statement_block
 	{	$$ = new Node("ELIF", NELIF_BLOCK, yylineno);
 		$$->addChild($2);
 		$$->addChild($3);
@@ -405,16 +410,18 @@ methods:
 	;
 
 method: DEF IDENT formal_arg_section return_type statement_block
-	{	$$ = new Node($2, NMETHOD, yylineno);
+	{	$$ = new Node(*$2, *$4, NMETHOD, yylineno);
+		$$->addChild($3);
+		$$->addChild($5);
 	}
 	;
 
 return_type:
 	%empty
-	{	$$ = new Node("EMPTY", NRETURN_TYPE, yylineno);
+	{	$$ = new string("Nothing");
 	}
   | ':' IDENT
-	{	$$ = new Node($2, NRETURN_TYPE, yylineno);
+	{	$$ = $2;
 	}
 	;
 
@@ -429,7 +436,6 @@ int main(int argc, char* argv[])
 		fn = argv[1];
 		yyin = file;
 	}
-
 	do
 	{	yyparse();
 	} while (!feof(yyin));

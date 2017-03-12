@@ -897,57 +897,57 @@ YY_RULE_SETUP
 case 7:
 YY_RULE_SETUP
 #line 20 "scanner.l"
-{ yylval.sval = (char*)"class"; return CLASS; }
+{ return CLASS; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 21 "scanner.l"
-{ yylval.sval = (char*)"def"; return DEF; }
+{ return DEF; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 22 "scanner.l"
-{ yylval.sval = (char*)"if"; return IF; }
+{ return IF; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 23 "scanner.l"
-{ yylval.sval = (char*)"elif"; return ELIF; }
+{ return ELIF; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 24 "scanner.l"
-{ yylval.sval = (char*)"else"; return ELSE; }
+{ return ELSE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 25 "scanner.l"
-{ yylval.sval = (char*)"while"; return WHILE; }
+{ return WHILE; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 26 "scanner.l"
-{ yylval.sval = (char*)"extends"; return EXTENDS; }
+{ return EXTENDS; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 27 "scanner.l"
-{ yylval.sval = (char*)"return"; return RETURN; }
+{ return RETURN; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 28 "scanner.l"
-{ yylval.sval = (char*)"and"; return AND; }
+{ return AND; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 29 "scanner.l"
-{ yylval.sval = (char*)"or"; return OR; }
+{ return OR; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 30 "scanner.l"
-{ yylval.sval = (char*)"not"; return NOT; }
+{ return NOT; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
@@ -957,17 +957,17 @@ YY_RULE_SETUP
 case 19:
 YY_RULE_SETUP
 #line 33 "scanner.l"
-{ yylval.sval = (char*)"<="; return ATMOST; }
+{ return ATMOST; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 34 "scanner.l"
-{ yylval.sval = (char*)">="; return ATLEAST; }
+{ return ATLEAST; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
 #line 35 "scanner.l"
-{ yylval.sval = (char*)">="; return EQUALS; }
+{ return EQUALS; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
@@ -977,36 +977,36 @@ YY_RULE_SETUP
 case 23:
 YY_RULE_SETUP
 #line 37 "scanner.l"
-{ yylval.sval = strdup(yytext); return IDENT; }
+{ yylval.sval = new string(yytext, yyleng); return IDENT; }
 	YY_BREAK
 case 24:
 /* rule 24 can match eol */
 YY_RULE_SETUP
 #line 38 "scanner.l"
-{ yylval.sval = strdup(yytext); return STRING_LIT; cout << yylineno << yytext << endl; }
+{ yylval.sval = new string(yytext, yyleng); return STRING_LIT; cout << yylineno << yytext << endl; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 39 "scanner.l"
-{ yylval.sval = strdup(yytext); return STRING_LIT; cout << yylineno << yytext << endl; }
+{ yylval.sval = new string(yytext, yyleng); return STRING_LIT; cout << yylineno << yytext << endl; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 40 "scanner.l"
-{ yylval.sval = strdup(yytext); cout << yylineno << yytext << endl;
+{ yylval.sval = new string(yytext, yyleng); cout << yylineno << yytext << endl;
 	cerr << yylineno << ": Illegal escape code; only \\\\, \\0, \\t, \\n, \\r, \\n are permitted (at '" << yytext << "')\"" << endl; return STRING_LIT; }
 	YY_BREAK
 case 27:
 /* rule 27 can match eol */
 YY_RULE_SETUP
 #line 42 "scanner.l"
-{ yylval.sval = strdup(yytext); cout << yytext << endl;
+{ yylval.sval = new string(yytext, yyleng); cout << yytext << endl;
 	cerr << yylineno << ": Newline before string terminated; single-quoted strings must be entirely on one line (at '" << yytext << "')\"" << endl; return STRING_LIT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 45 "scanner.l"
-{ yylval.ival = yytext[0]; return UNKNOWN; }
+{ return UNKNOWN; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP

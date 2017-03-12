@@ -74,10 +74,13 @@ union YYSTYPE
 #line 26 "parser.y" /* yacc.c:1909  */
 
 	Node* node;
+	NExpression* expr;
+	NStatement* stmt;
+	NClass* clas;
 	int ival;
-	char *sval;
+	string *sval;
 
-#line 81 "parser.tab.h" /* yacc.c:1909  */
+#line 84 "parser.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
