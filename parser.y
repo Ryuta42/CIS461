@@ -1,17 +1,13 @@
 %{
 #include <iostream>
 #include <cctype>
-#include <memory>
 #include <vector>
 #include <cstring>
-
 #include "ast.h"
 
 using namespace std;
 
 extern "C" int yylex();
-extern "C" int yyparse();
-extern "C" FILE *yyin;
 extern "C" int yylineno;
 extern "C" int yytext;
 
@@ -33,9 +29,9 @@ void yyerror(const char *s);
 }
 %define parse.error verbose
 %type <node> program class_section classes class_sig formal_arg_section formal_args formal_arg class_body extends
-%type <node> statement_section statement_block statements l_exp actual_arg_section actual_args
+%type <node> statement_section statement_block statements actual_arg_section actual_args
 %type <node> elif_section elif_blocks elif_block else_section else_block method_section methods method
-%type <expr> r_exp
+%type <expr> r_exp l_exp
 %type <stmt> statement
 %type <clas> class
 %type <ival> INT_LIT
@@ -75,7 +71,7 @@ classes:
 		$$->addChild($2);
 	}
   | class
-	{	$$ = new Node("classes", NCLASS_SEC);
+	{	$$ = new Node("classes", NCLASS_SEC, yylineno);
 		$$->addChild($1);
 	}
 	;
@@ -195,21 +191,17 @@ statement:
 		$$->addChild($3);
 	}
   | l_exp ':' IDENT '=' r_exp ';'
-	{	$$ = new NStatement(*$3, NSTASSIGN, yylineno);
-		$$->addChild($1);
-		$$->addChild($5);
+	{	$$ = new NAssignment("typed assignment" + *$3, *$3, $1, $5, yylineno);
 	}
   | l_exp '=' r_exp ';'
-	{	$$ = new NStatement("assignment", NSTASSIGN, yylineno);
-		$$->addChild($1);
-		$$->addChild($3);
+	{	$$ = new NAssignment("assignment", $1, $3, yylineno);
 	}
   | r_exp ';'
-	{	$$ = new NStatement("statement", NSTATEMENT, yylineno);
+	{	$$ = new NStatement($1->label, NSTEX, yylineno);
 		$$->addChild($1);
 	}
   | RETURN r_exp ';'
-	{	$$ = new NStatement("return stmt", NSTRETURN, yylineno);
+	{	$$ = new NStatement("return stmt " + $2->label, NSTRETURN, yylineno);
 		$$->addChild($2);
 	}
   | RETURN ';'
@@ -223,11 +215,11 @@ statement:
 
 l_exp:
 	r_exp '.' IDENT
-	{	$$ = new Node(*$3, NLEXQ, yylineno);
+	{	$$ = new NExpression(*$3, NLEXQ, yylineno);
 		$$->addChild($1);
 	}
   | IDENT
-	{	$$ = new Node(*$1, NLEX, yylineno);
+	{	$$ = new NExpression(*$1, NLEX, yylineno);
 	}
 	;
 
@@ -239,8 +231,7 @@ r_exp:
 	{	$$ = new NString(*$1, yylineno);
 	}
   | l_exp
-	{	$$ = new NExpression("Left expression", NLEX, yylineno);
-		$$->addChild($1);
+	{	$$ = $1;
 	}
   | r_exp '+' r_exp
 	{	$$ = new NExpression("Add", NEXADD, yylineno);
@@ -307,7 +298,7 @@ r_exp:
 		$$->addChild($4);
 	}
   | IDENT actual_arg_section
-	{	$$ = new NExpression("class", *$1, NEXCLASS, yylineno);
+	{	$$ = new NExpression(*$1, *$1, NEXCLASS, yylineno);
 		$$->addChild($2);
 	}
   | '(' r_exp ')'
@@ -318,6 +309,11 @@ r_exp:
 	{ 	nerrors++;
 		$$ = new NExpression("ERROR", NEXERR, yylineno);
 	}
+  | r_exp '.' IDENT error
+  	{	cout << "!!" << endl;
+		$$ = new NExpression("ERROR", NEXERR, yylineno);
+  		nerrors++;
+  	}
 	;
 
 actual_arg_section:
@@ -366,10 +362,10 @@ elif_blocks:
 	}
 	;
 
-elif_block:	ELIF r_exp statement_block
+elif_block:	ELIF '(' r_exp ')' statement_block
 	{	$$ = new Node("ELIF", NELIF_BLOCK, yylineno);
-		$$->addChild($2);
 		$$->addChild($3);
+		$$->addChild($5);
 	}
 	;
 
@@ -426,26 +422,6 @@ return_type:
 	;
 
 %%
-int main(int argc, char* argv[])
-{	if (argc > 1)
-	{	file = fopen(argv[1], "r");
-		if (!file)
-		{	cerr << "Error opening file!" << endl;
-			return -1;
-		}
-		fn = argv[1];
-		yyin = file;
-	}
-	do
-	{	yyparse();
-	} while (!feof(yyin));
-
-	// Work with AST
-	ast.process();
-
-	return 0;
-}
-
 void yyerror(const char *s)
 {	cerr << fn << ":" << yylineno << ": " << s << endl;
 }

@@ -1,13 +1,20 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <map>
 #include <stack>
 #include <typeinfo>
+#include <tuple>
 using namespace std;
 
 #ifndef AST_H
 #define AST_H
 
+enum MemberType {
+    ERROR,
+    VARIABLE,
+    METHOD
+};
 enum NodeType {
     NODE,
     NPROGRAM,
@@ -21,9 +28,11 @@ enum NodeType {
     NSTATEMENT_SEC,
     NSTATEMENT_BLOCK,
     NSTATEMENT,
+    NSTEX,
     NSTIF,
     NSTWHILE,
     NSTASSIGN,
+    NSTASSIGNT,
     NSTRETURN,
     NEX,
     NLEX,
@@ -56,11 +65,15 @@ enum NodeType {
     NELSE_BLOCK,
     NMETHOD_SEC,
     NMETHOD,
-    NRETURN_TYPE
+    NRETURN_TYPE,
+    NUNDEFINED
 };
+extern string memberType[];
 extern string nodeType[];
 extern char* fn;
 extern void err(string message, int i);
+extern void incErr();
+extern int numErrors;
 
 class AST;
 
@@ -98,7 +111,6 @@ public:
         cout << label << ": " << nodeType[type] << "  (" << ch.size() << ")" << endl;
         for (auto &it : ch)           it->print(depth+1);         // recursively print ch
     }
-    void validateClassCalls(AST* ast);
 };
 
 class NExpression : public Node{
@@ -110,14 +122,13 @@ public:
     NExpression(string label, string valueType, NodeType subtype, int line) : Node(label, valueType, NEX, line)
     {   this->subtype = subtype;
     }
-    //string typeCheck(string type)
 };
 
 class NInt : public NExpression{
 public:
     int value = 0;
 
-    NInt(int value, int line) : NExpression("int", NINT, line)
+    NInt(int value, int line) : NExpression(">int_literal", "Int", NINT, line)
     {   this->value = value;
         this->type = NINT;
     }
@@ -127,7 +138,7 @@ class NString : public NExpression{
 public:
     string value = "-";
 
-    NString(string value, int line) : NExpression("string", NSTRING, line)
+    NString(string value, int line) : NExpression("string", "String", NSTRING, line)
     {   this->value = value;
     }
 };
@@ -149,8 +160,35 @@ class NStatement : public Node{
 public:
     NodeType subtype;
 
-    NStatement(string label, NodeType subtype, int line) : Node(label, NSTATEMENT, line)
+    NStatement(string label, NodeType subtype, int line) : NStatement(label, "-", subtype, line) {}
+    NStatement(string label, string valueType, NodeType subtype, int line) : Node(label, valueType, NSTATEMENT, line)
     {   this->subtype = subtype;
+    }
+};
+
+class NAssignment : public NStatement{
+public:
+    NExpression *left, *right;
+
+    NAssignment(string label, NExpression* left, NExpression* right, int line) : NStatement(label, "-", NSTASSIGN, line)
+    {   this->left = left;
+        this->addChild(left);
+        this->right = right;
+        this->addChild(right);
+    }
+    NAssignment(string label, string givenType, NExpression* left, NExpression* right, int line) : NStatement(label, givenType, NSTASSIGNT, line)
+    {   this->left = left;
+        this->addChild(left);
+        this->right = right;
+        this->addChild(right);
+    }
+    void addLeft(NExpression* n)
+    {   left = n;
+        this->addChild(n);
+    }
+    void addRight(NExpression* n)
+    {   right = n;
+        this->addChild(n);
     }
 };
 
@@ -160,7 +198,7 @@ public:
     string ext;
     CTNode* parent;
     vector<CTNode*> ch;
-    map<string, string> vtable;
+    map<string, tuple<string,MemberType> > vtable;
 
     CTNode(){}
     CTNode(string label, string ext)
@@ -181,7 +219,7 @@ public:
         cout << ext << "->" << label << " (" << vtable.size() << ")" << endl;
         for (auto &it : vtable)
         {   for (int i = depth; i > 0; i--)      cout << "    ";
-            cout << it.first << ": " << it.second << endl;
+            cout << it.first << ": " << get<0>(it.second) << " (" << memberType[get<1>(it.second)] << ")" << endl;
         }
         for (auto &it : ch)           it->print(depth+1);         // recursively print ch
     }
@@ -196,7 +234,13 @@ public:
     ClassTree()
     {   processed = false;
         root = new CTNode("Obj", "-");
-        addToTree(new NClass("String", "Obj"));
+        map <string, tuple<string, MemberType> >* builtIns = new map<string, tuple<string, MemberType> >();     // add built in method declarations
+        builtIns->insert(pair<string, tuple <string, MemberType> >("this", make_tuple("this", VARIABLE)));
+        builtIns->insert(pair<string, tuple <string, MemberType> >("PRINT", make_tuple("Nothing", METHOD)));
+        builtIns->insert(pair<string, tuple <string, MemberType> >("STR", make_tuple("String", METHOD)));
+        addVTable("Obj", builtIns);
+
+        addToTree(new NClass("String", "Obj"));                         // add built in classes
         addToTree(new NClass("Int", "Obj"));
         addToTree(new NClass("Nothing", "Obj"));
         addToTree(new NClass("Boolean", "Obj"));
@@ -220,7 +264,7 @@ public:
     }
     string lca(string c1, string c2);
     bool checkSubclass(string sub, string super);
-    bool addVTable(string className, map<string,string>* map);
+    bool addVTable(string className, map<string, tuple<string, MemberType> >* map);
 };
 
 class AST{
@@ -228,16 +272,22 @@ private:
     ClassTree classTree;
     vector<NClass*> classVector;
     Node* currentNote = root;
-    map<string, NodeType> vtable;
+    map<string, string> vtable;
     vector<string> initValues;
 
     bool buildClassTree();
-    bool pass1();       // validate class declarations
-    bool verify(const string& s, int line);
+    bool passes();       // validate class declarations
+    void classVarLookup(string classLabel, string member);
+    void classMethLookup(string classLabel, string member);
 
 public:
     Node* root;
 
+    bool checkSyntax(int nerrors)
+    {   if (nerrors > 0)
+            return false;
+        return true;
+    }
     void addClass(Node* n)
     {   classVector.emplace_back(static_cast<NClass*>(n));
     }
@@ -247,6 +297,7 @@ public:
     }
     void printTree()
     {   root->print(0);
+        cout << endl;
     }
     string lca(string c1, string c2)
     {   return classTree.lca(c1, c2);
@@ -255,7 +306,14 @@ public:
     {   return classTree.checkSubclass(sub, super);
     }
     int process();       // return 0 on success
+    void addVariable(string label, string type);
     bool verifyClass(const string& s, int line);
+    bool verifyLabel(const string& s, map<string, string>* vt, int line);
+    void validateClassCalls(Node* n);
+    bool checkVarInitInClass(Node* n);
+    bool checkVarInit(Node* n);
+    string interpretType(Node* n);
+    void write();
 };
 
 #endif // AST.H

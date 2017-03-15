@@ -1,14 +1,33 @@
-class Sqr(x: Int) {
-	x.y:int = 44;
-	
-	def are(w: int, h: int) : int {
-		area;
-	}
+/**
+ * A simple sample Quack program
+ * Testing cyclical class definitions
+ */
+class Pt(x: Int, y: Int) {
+    this.x = x;
+    this.y = y;
+
+    def STR() : String {
+       return "(" + this.x.STR() + ","
+                  + this.y.STR() ;
+    }
+
+    def PLUS(other: Pt) : Pt {
+       return Pt(this.x + other.x, this.y + other.y);
+    }
+
+    def _x() : Int { return this.x; }
+    def _y() : Int {  return this.y; }
 }
-class Circ(y: Str, z: Foo) extends Shape {
-	y;
+class C1(ll: Pt) extends Obj{
+  this.ll = ll;
 }
-class Triangle() {
-	tri;frog;
+class C2(ll: Pt) extends C1{
+  this.ll = ll;
 }
-class Hex(){}
+class C3(ll: Pt) extends C2{
+  this.ll = ll;
+}
+
+a = "22";
+b = "f";
+c = a + b + "1111sdfsd";

@@ -71,7 +71,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 26 "parser.y" /* yacc.c:1909  */
+#line 22 "parser.y" /* yacc.c:1909  */
 
 	Node* node;
 	NExpression* expr;
