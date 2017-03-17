@@ -68,7 +68,7 @@
 #include <cctype>
 #include <vector>
 #include <cstring>
-#include "ast.h"
+#include "compiler.h"
 
 using namespace std;
 
@@ -1808,9 +1808,9 @@ yyreduce:
   case 55:
 #line 313 "parser.y" /* yacc.c:1646  */
     {	cout << "!!" << endl;
-		(yyval.expr) = new NExpression("ERROR", NEXERR, yylineno);
-  		nerrors++;
-  	}
+	(yyval.expr) = new NExpression("ERROR", NEXERR, yylineno);
+		nerrors++;
+  }
 #line 1815 "parser.tab.c" /* yacc.c:1646  */
     break;
 

@@ -1,6 +1,6 @@
 %{
 #include <iostream>
-#include "ast.h"
+#include "compiler.h"
 #include "parser.tab.h"
 #define YY_DECL extern "C" int yylex()
 
@@ -34,7 +34,7 @@ not 							{ return NOT; }
 ">="							{ return ATLEAST; }
 "=="							{ return EQUALS; }
 [0-9]+ 							{ yylval.ival = atoi(yytext); return INT_LIT; }
-[_a-zA-Z0-9]+					{ yylval.sval = new string(yytext, yyleng); return IDENT; }
+[_a-zA-Z][_a-zA-Z0-9]*			{ yylval.sval = new string(yytext, yyleng); return IDENT; }
 \"\"\"(.|\n)*\"\"\"				{ yylval.sval = new string(yytext, yyleng); return STRING_LIT; cout << yylineno << yytext << endl; }
 \"(\\[0bftnr\\]|[^"\n\\])*\"	{ yylval.sval = new string(yytext, yyleng); return STRING_LIT; cout << yylineno << yytext << endl; }
 \"(\\.|[^"\n])*\"				{ yylval.sval = new string(yytext, yyleng); cout << yylineno << yytext << endl;

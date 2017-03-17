@@ -1,8 +1,16 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int main() {
-	int i = 3;
-	int j = 5;
-	printf("Hello World! %d\n", i + j);
-	return 0;
+#include "Builtins.h"
+
+void quackmain();
+
+int main(int argc, char** argv) {
+	quackmain();
+	printf("--- Terminated successfully ---\n");
+	exit(0);
+}
+void quackmain() {
+	(int_literal(5));
+	c->clazz->PRINT((obj_Obj) c);
 }

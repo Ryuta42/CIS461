@@ -28,6 +28,7 @@ class C3(ll: Pt) extends C2{
   this.ll = ll;
 }
 
-a = "22";
-b = "f";
-c = a + b + "1111sdfsd";
+a = 11;
+b = 2;
+c = a + b;
+c.PRINT();

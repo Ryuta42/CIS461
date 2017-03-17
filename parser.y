@@ -3,7 +3,7 @@
 #include <cctype>
 #include <vector>
 #include <cstring>
-#include "ast.h"
+#include "compiler.h"
 
 using namespace std;
 
@@ -54,27 +54,27 @@ program:
 
 		ast.root = $$;
 	}
-	;
+;
 
 class_section:
 	%empty
 	{	$$ = new Node("EMPTY", NCLASS_SEC, yylineno);
 	}
-  | classes
+| classes
 	{	$$ = $1;
 	}
-	;
+;
 
 classes:
 	classes class
 	{	$$ = $1;
 		$$->addChild($2);
 	}
-  | class
+| class
 	{	$$ = new Node("classes", NCLASS_SEC, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 class:
 	class_sig class_body
@@ -83,7 +83,7 @@ class:
 		$$->addChild($2);
 		ast.addClass($$);
 	}
-	;
+;
 
 class_sig:
 	CLASS IDENT formal_arg_section extends
@@ -91,48 +91,48 @@ class_sig:
 		$$->addChild($3);
 		$$->addChild($4);
 	}
-  | CLASS error extends
+| CLASS error extends
 	{	nerrors++;
 	}
-	;
+;
 
 extends:
 	%empty
 	{	$$ = new Node("Obj", "Obj", NEXTENDS, yylineno);
 	}
-  | EXTENDS IDENT
+| EXTENDS IDENT
 	{	$$ = new Node(*$2, *$2, NEXTENDS, yylineno);
 	}
-	;
+;
 
 formal_arg_section:
 	'(' ')'
 	{	$$ = new Node("EMPTY", NFORMAL_ARG_SEC, yylineno);
 	}
-  | '(' formal_args ')'
+| '(' formal_args ')'
 	{	$$ = $2;
 	}
-  | '(' error ')'
+| '(' error ')'
 	{ 	$$ = new Node("ERROR", NFORMAL_ARG_SEC, yylineno);
 		nerrors++;
 	}
-	;
+;
 
 formal_args:
 	formal_args ',' formal_arg
 	{	$$ = $1;
 		$$->addChild($3);
 	}
-  | formal_arg
+| formal_arg
 	{	$$ = new Node("formal_args", NFORMAL_ARG_SEC, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 formal_arg: IDENT ':' IDENT
 	{	$$ = new Node(*$1, *$3, NFORMAL_ARG, yylineno);
 	}
-	;
+;
 
 class_body:
 	'{' statement_section method_section '}'
@@ -140,42 +140,42 @@ class_body:
 		$$->addChild($2);
 		$$->addChild($3);
 	}
-  | '{' error '}'
+| '{' error '}'
 	{ 	$$ = new Node("ERROR", NCLASS_BODY, yylineno);
 		nerrors++;
 	}
-	;
+;
 
 statement_section:
 	%empty
 	{	$$ = new Node("EMPTY", NSTATEMENT_SEC, yylineno);
 	}
-  | statements
+| statements
 	{	$$=$1;
 	}
-	;
+;
 
 statement_block:
 	'{' statement_section '}'
 	{	$$ = new Node("statement_section", NSTATEMENT_BLOCK, yylineno);
 		$$->addChild($2);
 	}
-  | '{' error '}'
+| '{' error '}'
 	{ 	$$ = new Node("ERROR", NSTATEMENT_BLOCK, yylineno);
 		nerrors++;
 	}
-	;
+;
 
 statements:
 	statements statement
 	{	$$ = $1;
 		$$->addChild($2);
 	}
-	| statement
+| statement
 	{	$$ = new Node("statements", NSTATEMENT_SEC, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 statement:
 	IF r_exp statement_block elif_section else_section
@@ -185,170 +185,170 @@ statement:
 		$$->addChild($4);
 		$$->addChild($5);
 	}
-  | WHILE r_exp statement_block
+| WHILE r_exp statement_block
 	{	$$ = new NStatement("while loop", NSTWHILE, yylineno);
 		$$->addChild($2);
 		$$->addChild($3);
 	}
-  | l_exp ':' IDENT '=' r_exp ';'
+| l_exp ':' IDENT '=' r_exp ';'
 	{	$$ = new NAssignment("typed assignment" + *$3, *$3, $1, $5, yylineno);
 	}
-  | l_exp '=' r_exp ';'
+| l_exp '=' r_exp ';'
 	{	$$ = new NAssignment("assignment", $1, $3, yylineno);
 	}
-  | r_exp ';'
+| r_exp ';'
 	{	$$ = new NStatement($1->label, NSTEX, yylineno);
 		$$->addChild($1);
 	}
-  | RETURN r_exp ';'
+| RETURN r_exp ';'
 	{	$$ = new NStatement("return stmt " + $2->label, NSTRETURN, yylineno);
 		$$->addChild($2);
 	}
-  | RETURN ';'
+| RETURN ';'
 	{	$$ = new NStatement("return blank", NSTRETURN, yylineno);
 	}
-  | error ';'
+| error ';'
 	{	$$ = new NStatement("ERROR", NSTATEMENT, yylineno);
 		nerrors++;
 	}
-	;
+;
 
 l_exp:
 	r_exp '.' IDENT
 	{	$$ = new NExpression(*$3, NLEXQ, yylineno);
 		$$->addChild($1);
 	}
-  | IDENT
+| IDENT
 	{	$$ = new NExpression(*$1, NLEX, yylineno);
 	}
-	;
+;
 
 r_exp:
 	INT_LIT
 	{	$$ = new NInt($1, yylineno);
 	}
-  | STRING_LIT
+| STRING_LIT
 	{	$$ = new NString(*$1, yylineno);
 	}
-  | l_exp
+| l_exp
 	{	$$ = $1;
 	}
-  | r_exp '+' r_exp
+| r_exp '+' r_exp
 	{	$$ = new NExpression("Add", NEXADD, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp '-' r_exp
+| r_exp '-' r_exp
 	{	$$ = new NExpression("Subtract", NEXSUB, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp '*' r_exp
+| r_exp '*' r_exp
 	{	$$ = new NExpression("Multiply", NEXMUL, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp '/' r_exp
+| r_exp '/' r_exp
 	{	$$ = new NExpression("Divide", NEXDIV, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp EQUALS r_exp
+| r_exp EQUALS r_exp
 	{	$$ = new NExpression("==", NEXEQ, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp ATMOST r_exp
+| r_exp ATMOST r_exp
 	{	$$ = new NExpression("<=", NEXMOST, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp '<' r_exp
+| r_exp '<' r_exp
 	{	$$ = new NExpression("<", NEXLESS, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp ATLEAST r_exp
+| r_exp ATLEAST r_exp
 	{	$$ = new NExpression(">=", NEXLEAST, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp '>' r_exp
+| r_exp '>' r_exp
 	{	$$ = new NExpression(">", NEXGREATER, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp AND r_exp
+| r_exp AND r_exp
 	{	$$ = new NExpression("AND", NEXAND, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | r_exp OR r_exp
+| r_exp OR r_exp
 	{	$$ = new NExpression("OR", NEXOR, yylineno);
 		$$->addChild($1);
 		$$->addChild($3);
 	}
-  | NOT r_exp
+| NOT r_exp
 	{	$$ = new NExpression("NOT", NEXNOT, yylineno);
 		$$->addChild($2);
 	}
-  | r_exp '.' IDENT actual_arg_section
+| r_exp '.' IDENT actual_arg_section
 	{	$$ = new NExpression(*$3, NEXMETH, yylineno);
 		$$->addChild($1);
 		$$->addChild($4);
 	}
-  | IDENT actual_arg_section
+| IDENT actual_arg_section
 	{	$$ = new NExpression(*$1, *$1, NEXCLASS, yylineno);
 		$$->addChild($2);
 	}
-  | '(' r_exp ')'
+| '(' r_exp ')'
 	{	$$ = new NExpression("REX", NEXPAR, yylineno);
 		$$->addChild($2);
 	}
-  | '(' error ')'
+| '(' error ')'
 	{ 	nerrors++;
 		$$ = new NExpression("ERROR", NEXERR, yylineno);
 	}
-  | r_exp '.' IDENT error
-  	{	cout << "!!" << endl;
-		$$ = new NExpression("ERROR", NEXERR, yylineno);
-  		nerrors++;
-  	}
-	;
+| r_exp '.' IDENT error
+  {	cout << "!!" << endl;
+	$$ = new NExpression("ERROR", NEXERR, yylineno);
+		nerrors++;
+  }
+;
 
 actual_arg_section:
 	'(' ')'
 	{	$$ = new Node("EMPTY", NACTUAL_ARG_SEC, yylineno);
 	}
-  | '(' actual_args ')'
+| '(' actual_args ')'
 	{	$$ = $2;
 	}
-  | '(' error ')'
+| '(' error ')'
 	{ 	$$ = new Node("ERROR", NACTUAL_ARG_SEC, yylineno);
 		nerrors++;
 	}
-	;
+;
 
 actual_args:
 	actual_args ',' r_exp
 	{	$$ = $1;
 		$$->addChild($3);
 	}
-  | r_exp
+| r_exp
 	{	$$ = new Node("actual_arg_section", NACTUAL_ARG_SEC, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 elif_section:
 	%empty
 	{	$$ = new Node("EMPTY", NELIF, yylineno);
 	}
-  | elif_blocks
+| elif_blocks
 	{	$$ = new Node("elif_secion", NELIF, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 elif_blocks:
 	elif_blocks elif_block
@@ -356,70 +356,70 @@ elif_blocks:
 		$$->addChild($1);
 		$$->addChild($2);
 	}
-  | elif_block
+| elif_block
 	{	$$ = new Node("elif_blocks", NELIF_BLOCKS, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 elif_block:	ELIF '(' r_exp ')' statement_block
 	{	$$ = new Node("ELIF", NELIF_BLOCK, yylineno);
 		$$->addChild($3);
 		$$->addChild($5);
 	}
-	;
+;
 
 else_section:
 	%empty
 	{	$$ = new Node("EMPTY", NELSE, yylineno);
 	}
-  | else_block
+| else_block
 	{	$$ = new Node("else_section", NELSE, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 else_block:	ELSE statement_block
 	{	$$ = new Node("ELSE", NELSE_BLOCK, yylineno);
 		$$->addChild($2);
 	}
-	;
+;
 
 method_section:
 	%empty
 	{	$$ = new Node("EMPTY", NMETHOD_SEC, yylineno);
 	}
-  | methods
+| methods
 	{	$$ = $1;
 	}
-	;
+;
 
 methods:
 	methods method
 	{	$$ = $1;
 		$$->addChild($2);
 	}
-  | method
+| method
 	{	$$ = new Node("methods", NMETHOD_SEC, yylineno);
 		$$->addChild($1);
 	}
-	;
+;
 
 method: DEF IDENT formal_arg_section return_type statement_block
 	{	$$ = new Node(*$2, *$4, NMETHOD, yylineno);
 		$$->addChild($3);
 		$$->addChild($5);
 	}
-	;
+;
 
 return_type:
 	%empty
 	{	$$ = new string("Nothing");
 	}
-  | ':' IDENT
+| ':' IDENT
 	{	$$ = $2;
 	}
-	;
+;
 
 %%
 void yyerror(const char *s)

@@ -1,7 +1,7 @@
 /**
  * A simple sample Quack program
  */
-
+/*
 class Pt(x: Int, y: Int) {
   this.x = x;
   this.y = y;
@@ -47,7 +47,8 @@ p2 = Pt(5, 6);
 a_square = Square( Pt(3,3), 5 );
 a_square = a_square.translate( Pt(2,2) );
 a_square.PRINT();
-
+*/
+(5);
 /* ERRORS */
 //a_square.PRINT(;      // TODO: unclosed function call
 //a_square.PRIN();      // call to nonexistence member
