@@ -10,7 +10,7 @@ string memberType[] = {
 };
 
 string nodeType[] = {
-  "ODE" ,
+  "NODE" ,
   "PROGRAM" ,
   "CLASS_SEC" ,
   "CLASS" ,
@@ -34,10 +34,6 @@ string nodeType[] = {
   "RIGHT EXP" ,
   "INT" ,
   "STRING" ,
-  "EXP ADD" ,
-  "EXP SUBTRACT" ,
-  "EXP MULTIPLY" ,
-  "EXP DIVIDE" ,
   "EXP EQUALS" ,
   "EXP ATMOST" ,
   "EXP LESSTHAN" ,
@@ -50,7 +46,6 @@ string nodeType[] = {
   "EXP CLASS CONSTRUCTOR" ,
   "EXP PARENTHASES" ,
   "EXP ERROR" ,
-  "ACTUAL_ARG_SEC" ,
   "ACTUAL_ARGS" ,
   "ELIF" ,
   "ELIF_BLOCK" ,
@@ -68,11 +63,10 @@ void err(string message, int line)
   incErr();
 }
 void incErr()
-{ ++numErrors;
-  //if ( >= 10)
-  // {   cerr << "Too many errors detected. Aborting compilation..." << endl;
-  //     exit(-1);
-  // }
+{ if ( ++numErrors >= 10)
+  {   cerr << "Too many errors detected. Aborting compilation..." << endl;
+      exit(-1);
+  }
 }
 int numErrors = 0;
 
@@ -101,6 +95,28 @@ void CTNode::print(int depth)
 }
 
 /* --- ClassTree --- */
+ClassTree::ClassTree()
+{ processed = false;
+  root = new CTNode("Obj", "-");
+  map <string, string>* biv = new map<string, string>();     // add built in variable declarations
+  map <string, CTMethod>* bim = new map<string, CTMethod>();     // add built in method declarations
+  biv->insert(pair<string,string>("this", ">this"));
+  CTMethod m = CTMethod("PRINT","Nothing");
+  m.addArg("this", "Obj");
+  bim->insert(pair<string,CTMethod>("PRINT", m));
+  m = CTMethod("STR","String");
+  m.addArg("this", "Obj");
+  bim->insert(pair<string,CTMethod>("STR", m));
+  m = CTMethod("EQUAL","Boolean");
+  m.addArg("this", "Obj");
+  bim->insert(pair<string,CTMethod>("EQUAL", m));
+  addVTable("Obj", biv, bim);
+
+  addToTree(new NClass("String", "Obj"));                         // add built in classes
+  addToTree(new NClass("Int", "Obj"));
+  addToTree(new NClass("Nothing", "Obj"));
+  addToTree(new NClass("Boolean", "Obj"));
+}
 bool ClassTree::addToTree(NClass* n)
 { if (searchTree(n->label))   return false;           // Class already defined
   CTNode* parent = searchTree(n->extends);
@@ -118,6 +134,13 @@ string ClassTree::lca(string c1, string c2)
     return result;
   }
   CTNode *n1, *n2;
+  if (c1 == "-" && c2 != "-")
+    if (n2 = searchTree(c2))
+      return c2;
+  else if (c2 == "-" && c1 != "-")
+    if (n1 = searchTree(c1))
+      return c1;
+
   if (!(n1 = searchTree(c1)))
   { cerr << "Class '" << c1 << "' has not been defined" << endl;
     return result;
@@ -154,7 +177,7 @@ bool ClassTree::addVTable(string className, map<string,string>* vt, map<string,C
   if (!c)     return false;
   for (auto &v : *vt)
   { if (c->vtable.count(v.first) > 0)
-    {       // TODO verify overwite is compatible class
+    { // TODO verify overwite is compatible class
       c->vtable[v.first] = v.second;
     }
     else
@@ -162,8 +185,8 @@ bool ClassTree::addVTable(string className, map<string,string>* vt, map<string,C
   }
   for (auto &m : *mt)
   { if (c->mtable.count(m.first) > 0)
-    {       // TODO verify overwite is compatible class
-      cout << "Override" << endl;
+    { // TODO verify overwite is compatible class
+      cout << "method override" << endl;
       //c->vtable[v.first] = v.second;
     }
     else
@@ -195,7 +218,14 @@ bool AST::buildClassTree()
         }
         nt = c->ch.back();                          // class body
         for (auto &n3 : nt->ch.front()->ch)         // constructors
-        { //cout << "constructor: " << n3->ch.front()->label << ": " << nodeType[n3->ch.front()->type] << endl;
+        { cout << "constructor: " << n3->ch.front()->label << ": " << nodeType[CEXP(n3->ch.front())->subtype] << endl;
+          //cout << n3->ch.front()->label << ": " << inferType(n3->ch.back()) << endl;
+          if (n3->ch.front()->ch.front()->label == "this")
+          { //cvt[n3->ch.front()->label] =
+
+          }
+          //else
+          //  err("Unexpected qualifier '" + n3->ch.front()->ch.front()->label + "'",n3->line);
         }
         for (auto &n3 : nt->ch.back()->ch)          // methods
         { //cout << "method: " << n3->label << ": " << nodeType[n3->type] << endl;
@@ -252,10 +282,11 @@ bool AST::verifyLabel(const string& s, map<string, string>* vt, int line)
   return false;
 }
 int AST::process()
-{ //printTree();
-  if (!buildClassTree())  return 1;
+{ bool valid = true;
+  printTree();
+  if (!buildClassTree())  valid = false;
   printClasses();
-  validateClassCalls(root);
+  if (!validateClassCalls(root))  valid = false;
 
   cout << "Variable Inits:" << endl;
   checkVarInitInClass(root->ch.front());
@@ -271,10 +302,16 @@ int AST::process()
   cout << endl;
 
   cout << "Interpreting types..." << endl;
-  interpretType(root->ch.back());
+  typeCkeck();
   cout << endl;
+  printTree();
 
-  generateCode();
+
+  if (valid)  generateCode();
+  else
+  { cerr << "Problem validating class calls. Compilation terminated." << endl;
+    return 1;
+  }
 
   cout << "\n--Compile completed with " << numErrors << " error(s)--" << endl;
   return 0;
@@ -283,40 +320,42 @@ void AST::addVariable(string label, string type)
 { vtable.insert(pair<string, string>(label, type));
   cout << "Assigning " + label + " type " + type << endl;
 }
-void AST::classVarLookup(string classLabel, string member)
+string AST::classVarType(string classLabel, string member)
 { CTNode* ctn = classTree.searchTree(classLabel);
   if (ctn->vtable.count(member) > 0)
-  {
-
+  { return ctn->vtable[member];
   }
   else
     err("'" + member + "' is not a member in class '" + ctn->label + "'", 0);
 }
-void AST::classMethLookup(string classLabel, string method)
+string AST::classMethType(string classLabel, string method)
 { CTNode* ctn = classTree.searchTree(classLabel);
   if (ctn->mtable.count(method) > 0)
-  {
+  { return ctn->mtable[method].type;
   }
   else
     err("'" + method + "' is not a method of class '" + ctn->label + "'", 0);
 }
-void AST::validateClassCalls(Node* n)
+bool AST::validateClassCalls(Node* n)
 { switch (n->type)
   { case NEX:
       if (CEXP(n)->subtype == NEXCLASS)
-        verifyClass(n->valueType, n->line);
+        return verifyClass(n->valueType, n->line);
     break;
     case NSTATEMENT:
       if (CSTA(n)->subtype == NSTASSIGNT)
-        verifyClass(n->valueType, n->line);
+        return verifyClass(n->valueType, n->line);
     break;
     case NEXTENDS:
     case NFORMAL_ARG:
     case NMETHOD:
-      verifyClass(n->valueType, n->line);
+      return verifyClass(n->valueType, n->line);
     break;
   }
-  for (auto &c : n->ch)   validateClassCalls(c);
+  for (auto &c : n->ch)         // recursively check children
+    if (!validateClassCalls(c))
+      return false;
+  return true;
 }
 bool AST::checkVarInitInClass(Node* n)
 { switch (n->type)
@@ -344,7 +383,7 @@ bool AST::checkVarInit(Node* n)
         break;
         case NLEXQ:
           cout << "qualified LEX " << n->label << endl;
-          classVarLookup(vtable[n->ch.front()->label], n->label);
+          classVarType(vtable[n->ch.front()->label], n->label);
         break;
         case NEXMETH:
           // check arguments
@@ -373,7 +412,7 @@ bool AST::checkVarInit(Node* n)
         break;
       }
     break;
-    case NACTUAL_ARG_SEC:
+    case NACTUAL_ARGS:
       for (auto &a : n->ch)
       { //cout << "checking arg " << a->label << endl;
         checkVarInit(a);
@@ -387,10 +426,24 @@ bool AST::checkVarInit(Node* n)
 
   return true;
 }
-string AST::interpretType(Node* n)
+bool AST::typeCkeck()
+{ bool changed;
+  map<string, string> oldTable;
+  do {
+    changed = false;
+    cout << "--Doing a type pass...--" << endl;
+    oldTable = vtable;
+    inferType(root->ch.back());
+    if (oldTable != vtable)
+      changed = true;
+  } while(changed);
+
+}
+string AST::inferType(Node* n)
 { if (n->valueType != "-")
     return n->valueType;
   string common = "--";
+  cout << n->label << endl;
   switch (n->type)
   { case NEX:
       switch (CEXP(n)->subtype)
@@ -399,33 +452,29 @@ string AST::interpretType(Node* n)
           n->valueType = common;
         break;
         case NEXMETH:
-          cout << "method call " << n->ch.front()->label << endl;
-          cout << n->ch.front()->label << " : " << vtable[n->ch.front()->label] << endl;
-          cout << n->label << endl;
-          classMethLookup(vtable[n->ch.front()->label], n->label);
-        break;
-        case NEXADD:
-        case NEXSUB:
-        case NEXMUL:
-        case NEXDIV:
-          common = classTree.lca(interpretType(n->ch.front()), interpretType(n->ch.back()));
-          n->valueType = common;
+          common = classMethType(vtable[n->ch.front()->label], n->label);
+          for (auto &a : CMET(n)->args)   inferType(a);
         break;
         case NEXPAR:
-          n->valueType = interpretType(n->ch.front());
+          common = inferType(n->ch.front());
+          n->valueType = common;
         break;
       }
     break;
     case NSTATEMENT:
       switch (CSTA(n)->subtype)
       { case NSTASSIGN:
-          common = interpretType(CASN(n)->right);
+          if (vtable.count(CASN(n)->left->label) > 0)
+            CASN(n)->left->valueType = vtable[CASN(n)->left->label];
+          common = classTree.lca(CASN(n)->left->valueType, inferType(CASN(n)->right));
           vtable[CASN(n)->left->label] = common;
+          CASN(n)->left->valueType = common;
+          n->valueType = common;
         break;
       }
     break;
     case NSTATEMENT_SEC:
-      for (auto &c : n->ch)   interpretType(c);
+      for (auto &c : n->ch)   inferType(c);
     break;
   }
   return common;
@@ -477,15 +526,15 @@ string AST::genCode(Node* n)
       { case NINT:
           return "int_literal(" + to_string(static_cast<NInt*>(n)->value) + ")";
         break;
-        case NEXADD:
+        //case NEXADD:
           //return genCode(n->ch.front()) + " + " + genCode(n->ch.back());
-          return genCode(n->ch.front()) + "->clazz->PLUS(" + genCode(n->ch.front()) + "," + genCode(n->ch.back()) + ")";
-        break;
+          //return genCode(n->ch.front()) + "->clazz->PLUS(" + genCode(n->ch.front()) + "," + genCode(n->ch.back()) + ")";
+        //break;
         case NLEX:
           return n->label;
         break;
         case NEXMETH:
-          cout << "method call " + n->label << endl;
+          //cout << "method call " + n->label << endl;
           return genCode(n->ch.front()) + "->clazz->" + n->label + "(" + ")";
         break;
         case NEXPAR:
@@ -499,7 +548,7 @@ string AST::genCode(Node* n)
           write(CASN(n)->left->label + " = " + genCode(CASN(n)->right) + ";");
         break;
         case NSTEX:
-          cout << "expression statement " + n->label << endl;
+          //cout << "expression statement " + n->label << endl;
           write(genCode(n->ch.front()) + ";");
         break;
       }

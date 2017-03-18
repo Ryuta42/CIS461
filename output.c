@@ -11,6 +11,12 @@ int main(int argc, char** argv) {
 	exit(0);
 }
 void quackmain() {
-	(int_literal(5));
+	obj_Pt p1;
+	obj_Pt p2;
+	obj_Pt p3;
+	p1 = -;
+	p2 = -;
+	p3 = p1->clazz->PLUS();
+	p3 = p1->clazz->PLUS();
 	c->clazz->PRINT((obj_Obj) c);
 }

@@ -27,8 +27,31 @@ class C2(ll: Pt) extends C1{
 class C3(ll: Pt) extends C2{
   this.ll = ll;
 }
+class CoolInt(val: Int) extends Int{
+  this.val = val;
+}
 
-a = 11;
+a = 30;
+//a = CoolInt(4);
+a = "aaa";
+//a = 45;
+//a = "2";
 b = 2;
 c = a + b;
 c.PRINT();
+
+/*
+x = 5;
+if (x == 5)
+{
+  x = 10;
+}
+elif (x < 5)
+{
+  x = 15;
+}
+else
+{
+  x = 20;
+}
+*/

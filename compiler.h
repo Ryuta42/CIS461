@@ -10,6 +10,7 @@ using namespace std;
 #define CEXP(n) static_cast<NExpression*>(n)
 #define CSTA(n) static_cast<NStatement*>(n)
 #define CASN(n) static_cast<NAssignment*>(n)
+#define CMET(n) static_cast<NMethod*>(n)
 
 #ifndef COMPILER_H
 #define COMPILER_H
@@ -44,10 +45,6 @@ enum NodeType {
   NREX,
   NINT,
   NSTRING,
-  NEXADD,
-  NEXSUB,
-  NEXMUL,
-  NEXDIV,
   NEXEQ,
   NEXMOST,
   NEXLESS,
@@ -60,7 +57,6 @@ enum NodeType {
   NEXCLASS,
   NEXPAR,
   NEXERR,
-  NACTUAL_ARG_SEC,
   NACTUAL_ARGS,
   NELIF,
   NELIF_BLOCK,
@@ -91,8 +87,12 @@ public:
   NodeType type = NODE;
 
   Node() { }
-  Node(string label, NodeType type) : Node(label, "-", type, -1) { }
-  Node(string label, NodeType type, int line) : Node(label, "-", type, line) { }
+  Node(string label, NodeType type)
+  : Node(label, "-", type, -1)
+  { }
+  Node(string label, NodeType type, int line)
+  : Node(label, "-", type, line)
+  { }
   Node(string label, string valueType, NodeType type, int line)
   { this->label = label;
     this->valueType = valueType;
@@ -113,11 +113,8 @@ public:
   void print(int depth)
   { cout << line << ":\t";
     for (int i = depth; i > 0; i--)      cout << "|   ";
-    cout << label << ": " << nodeType[type] << "  (" << ch.size() << ")" << endl;
+    cout << label + ": " + valueType + " " + nodeType[type] << endl;
     for (auto &it : ch)           it->print(depth+1);         // recursively print ch
-  }
-  string cg()
-  { return label;
   }
 };
 
@@ -125,9 +122,13 @@ class NExpression : public Node{
 public:
   NodeType subtype;
 
-  NExpression() {}
-  NExpression(string label, NodeType subtype, int line) : NExpression(label, "-", subtype, line) { }
-  NExpression(string label, string valueType, NodeType subtype, int line) : Node(label, valueType, NEX, line)
+  NExpression()
+  { }
+  NExpression(string label, NodeType subtype, int line)
+  : NExpression(label, "-", subtype, line)
+  { }
+  NExpression(string label, string valueType, NodeType subtype, int line)
+  : Node(label, valueType, NEX, line)
   { this->subtype = subtype;
   }
 };
@@ -150,6 +151,19 @@ public:
   }
 };
 
+class NMethod : public NExpression{
+public:
+  NExpression* caller;
+  Node* args;
+
+  NMethod(string label, NExpression* caller, Node* args, int line) : NExpression(label, NEXMETH, line)
+  { this->caller = caller;
+    this->args = args;
+    addChild(caller);
+    addChild(args);
+  }
+};
+
 class NClass : public Node{
 public:
   string extends;
@@ -167,8 +181,11 @@ class NStatement : public Node{
 public:
   NodeType subtype;
 
-  NStatement(string label, NodeType subtype, int line) : NStatement(label, "-", subtype, line) {}
-  NStatement(string label, string valueType, NodeType subtype, int line) : Node(label, valueType, NSTATEMENT, line)
+  NStatement(string label, NodeType subtype, int line)
+  : NStatement(label, "-", subtype, line)
+  { }
+  NStatement(string label, string valueType, NodeType subtype, int line)
+  : Node(label, valueType, NSTATEMENT, line)
   { this->subtype = subtype;
   }
 };
@@ -177,13 +194,15 @@ class NAssignment : public NStatement{
 public:
   NExpression *left, *right;
 
-  NAssignment(string label, NExpression* left, NExpression* right, int line) : NStatement(label, "-", NSTASSIGN, line)
+  NAssignment(string label, NExpression* left, NExpression* right, int line)
+  : NStatement(label, "-", NSTASSIGN, line)
   { this->left = left;
     this->addChild(left);
     this->right = right;
     this->addChild(right);
   }
-  NAssignment(string label, string givenType, NExpression* left, NExpression* right, int line) : NStatement(label, givenType, NSTASSIGNT, line)
+  NAssignment(string label, string givenType, NExpression* left, NExpression* right, int line)
+  : NStatement(label, givenType, NSTASSIGNT, line)
   { this->left = left;
     this->addChild(left);
     this->right = right;
@@ -242,9 +261,7 @@ public:
   }
   void print()
   { cout << label + "( ";
-    for (auto &a : args)
-    { cout << get<0>(a) + ":" + get<1>(a) + " ";
-    }
+    for (auto &a : args)    cout << get<0>(a) + ":" + get<1>(a) + " ";
     cout << "): " + type << endl;
   }
 };
@@ -254,25 +271,7 @@ public:
   CTNode* root;
   bool processed;
 
-  ClassTree()
-  { processed = false;
-    root = new CTNode("Obj", "-");
-    map <string, string>* biv = new map<string, string>();     // add built in variable declarations
-    map <string, CTMethod>* bim = new map<string, CTMethod>();     // add built in method declarations
-    biv->insert(pair<string,string>("this", ">this"));
-    CTMethod m = CTMethod("PRINT","Nothing");
-    m.addArg("this", "Obj");
-    bim->insert(pair<string,CTMethod>("PRINT", m));
-    m = CTMethod("STR","String");
-    m.addArg("this", "Obj");
-    bim->insert(pair<string,CTMethod>("STR", m));
-    addVTable("Obj", biv, bim);
-
-    addToTree(new NClass("String", "Obj"));                         // add built in classes
-    addToTree(new NClass("Int", "Obj"));
-    addToTree(new NClass("Nothing", "Obj"));
-    addToTree(new NClass("Boolean", "Obj"));
-  }
+  ClassTree();
   ~ClassTree()
   { delete(root);
   }
@@ -295,6 +294,16 @@ public:
   bool addVTable(string className, map<string,string>* vt, map<string,CTMethod>* mt);
 };
 
+class ClassInst{
+public:
+  string type;
+  CTNode* classRef;
+  ClassInst(string type, CTNode* classRef)
+  { this->type = type;
+    this->classRef = classRef;
+  }
+};
+
 class AST{
 private:
   ClassTree classTree;
@@ -306,8 +315,8 @@ private:
   int scope = 0;
 
   bool buildClassTree();
-  void classVarLookup(string classLabel, string member);
-  void classMethLookup(string classLabel, string member);
+  string classVarType(string classLabel, string member);
+  string classMethType(string classLabel, string member);
 
 public:
   Node* root;
@@ -323,6 +332,7 @@ public:
   void printClasses()
   { cout << "\nClass Tree:" << endl;
     classTree.printTree();          // Just list all classes
+    cout << endl;
   }
   void printTree()
   { root->print(0);
@@ -338,16 +348,17 @@ public:
   void addVariable(string label, string type);
   bool verifyClass(const string& s, int line);
   bool verifyLabel(const string& s, map<string, string>* vt, int line);
-  void validateClassCalls(Node* n);
+  bool validateClassCalls(Node* n);
   bool checkVarInitInClass(Node* n);
   bool checkVarInit(Node* n);
-  string interpretType(Node* n);
+  bool typeCkeck();
+  string inferType(Node* n);
   void generateCode();
   void genClasses();
   void genDeclarations();
   string genCode(Node* n);
   void write(string s)
-  {   out << string(scope, '\t') << s << endl;
+  { out << string(scope, '\t') << s << endl;
   }
 };
 

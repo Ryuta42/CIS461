@@ -234,24 +234,24 @@ r_exp:
 	{	$$ = $1;
 	}
 | r_exp '+' r_exp
-	{	$$ = new NExpression("Add", NEXADD, yylineno);
-		$$->addChild($1);
-		$$->addChild($3);
+	{	Node* arg = new Node("actual_args", NACTUAL_ARGS, yylineno);
+		arg->addChild($3);
+		$$ = new NMethod("PLUS", $1, arg, yylineno);
 	}
 | r_exp '-' r_exp
-	{	$$ = new NExpression("Subtract", NEXSUB, yylineno);
-		$$->addChild($1);
-		$$->addChild($3);
+	{	Node* arg = new Node("actual_args", NACTUAL_ARGS, yylineno);
+		arg->addChild($3);
+		$$ = new NMethod("MINUS", $1, arg, yylineno);
 	}
 | r_exp '*' r_exp
-	{	$$ = new NExpression("Multiply", NEXMUL, yylineno);
-		$$->addChild($1);
-		$$->addChild($3);
+	{	Node* arg = new Node("actual_args", NACTUAL_ARGS, yylineno);
+		arg->addChild($3);
+		$$ = new NMethod("TIMES", $1, arg, yylineno);
 	}
 | r_exp '/' r_exp
-	{	$$ = new NExpression("Divide", NEXDIV, yylineno);
-		$$->addChild($1);
-		$$->addChild($3);
+	{	Node* arg = new Node("actual_args", NACTUAL_ARGS, yylineno);
+		arg->addChild($3);
+		$$ = new NMethod("DIVIDE", $1, arg, yylineno);
 	}
 | r_exp EQUALS r_exp
 	{	$$ = new NExpression("==", NEXEQ, yylineno);
@@ -293,9 +293,7 @@ r_exp:
 		$$->addChild($2);
 	}
 | r_exp '.' IDENT actual_arg_section
-	{	$$ = new NExpression(*$3, NEXMETH, yylineno);
-		$$->addChild($1);
-		$$->addChild($4);
+	{	$$ = new NMethod(*$3, $1, $4, yylineno);
 	}
 | IDENT actual_arg_section
 	{	$$ = new NExpression(*$1, *$1, NEXCLASS, yylineno);
@@ -318,13 +316,13 @@ r_exp:
 
 actual_arg_section:
 	'(' ')'
-	{	$$ = new Node("EMPTY", NACTUAL_ARG_SEC, yylineno);
+	{	$$ = new Node("EMPTY", NACTUAL_ARGS, yylineno);
 	}
 | '(' actual_args ')'
 	{	$$ = $2;
 	}
 | '(' error ')'
-	{ 	$$ = new Node("ERROR", NACTUAL_ARG_SEC, yylineno);
+	{ 	$$ = new Node("ERROR", NACTUAL_ARGS, yylineno);
 		nerrors++;
 	}
 ;
@@ -335,7 +333,7 @@ actual_args:
 		$$->addChild($3);
 	}
 | r_exp
-	{	$$ = new Node("actual_arg_section", NACTUAL_ARG_SEC, yylineno);
+	{	$$ = new Node("actual_args", NACTUAL_ARGS, yylineno);
 		$$->addChild($1);
 	}
 ;
