@@ -18,27 +18,38 @@ class Pt(x: Int, y: Int) {
     def _x() : Int { return this.x; }
     def _y() : Int {  return this.y; }
 }
+class C3(ll: Pt) extends C2{
+  this.ll = ll;
+
+  def M() : CoolString {}
+}
 class C1(ll: Pt) extends Obj{
   this.ll = ll;
 }
 class C2(ll: Pt) extends C1{
   this.ll = ll;
+
+  def M() : String {}
 }
-class C3(ll: Pt) extends C2{
-  this.ll = ll;
-}
-class CoolInt(val: Int) extends Int{
+class CoolString(val: String) extends String{
   this.val = val;
+}
+class SString() {
+
+
+  def STR() : CoolString {
+     return "(String)" ;
+  }
 }
 
 a = 30;
 //a = CoolInt(4);
 a = "aaa";
-//a = 45;
-//a = "2";
-b = 2;
-c = a + b;
-c.PRINT();
+b = "abc";
+//c = a.double();
+
+//c = a + b;
+//c.PRINT();
 
 /*
 x = 5;

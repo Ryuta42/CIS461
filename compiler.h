@@ -15,11 +15,6 @@ using namespace std;
 #ifndef COMPILER_H
 #define COMPILER_H
 
-enum MemberType {
-  ERROR,
-  VARIABLE,
-  METHOD
-};
 enum NodeType {
   NODE,
   NPROGRAM,
@@ -68,9 +63,9 @@ enum NodeType {
   NRETURN_TYPE,
   NUNDEFINED
 };
-extern string memberType[];
 extern string nodeType[];
 extern char* fn;
+extern void err(string message);
 extern void err(string message, int i);
 extern void incErr();
 extern int numErrors;
@@ -86,7 +81,8 @@ public:
   string valueType = "-";
   NodeType type = NODE;
 
-  Node() { }
+  Node()
+  { }
   Node(string label, NodeType type)
   : Node(label, "-", type, -1)
   { }
@@ -146,7 +142,7 @@ class NString : public NExpression{
 public:
   string value = "-";
 
-  NString(string value, int line) : NExpression("string", "String", NSTRING, line)
+  NString(string value, int line) : NExpression(">Str_literal", "String", NSTRING, line)
   { this->value = value;
   }
 };
@@ -255,6 +251,7 @@ public:
   CTMethod(string label, string type)
   { this->label = label;
     this->type = type;
+    this->addArg("this", "Obj");
   }
   void addArg(string name, string type)
   { args.emplace_back(make_tuple(name, type));
@@ -270,6 +267,7 @@ class ClassTree{
 public:
   CTNode* root;
   bool processed;
+  bool isPerfect = true;
 
   ClassTree();
   ~ClassTree()
@@ -291,17 +289,7 @@ public:
   }
   string lca(string c1, string c2);
   bool checkSubclass(string sub, string super);
-  bool addVTable(string className, map<string,string>* vt, map<string,CTMethod>* mt);
-};
-
-class ClassInst{
-public:
-  string type;
-  CTNode* classRef;
-  ClassInst(string type, CTNode* classRef)
-  { this->type = type;
-    this->classRef = classRef;
-  }
+  bool addVTable(string className, map<string,string>* vt, map<string,CTMethod>* mt, int line);
 };
 
 class AST{
@@ -315,8 +303,18 @@ private:
   int scope = 0;
 
   bool buildClassTree();
-  string classVarType(string classLabel, string member);
-  string classMethType(string classLabel, string member);
+  void addTablesForClass(string label);
+  string classVarType(string classLabel, string member, int line);
+  string classMethType(string classLabel, string member, int line);
+  bool validateClassCalls(Node* n);
+  bool checkVarInit(Node* n);
+  bool typeCkeck();
+  bool inferType(Node* n, bool withFuncs);
+  void checkType(Node* n);
+  void generateCode();
+  void genClasses();
+  void genDeclarations();
+  string genCode(Node* n);
 
 public:
   Node* root;
@@ -345,18 +343,9 @@ public:
   { return classTree.checkSubclass(sub, super);
   }
   int process();       // return 0 on success
-  void addVariable(string label, string type);
+  void addVariable(string label);
   bool verifyClass(const string& s, int line);
   bool verifyLabel(const string& s, map<string, string>* vt, int line);
-  bool validateClassCalls(Node* n);
-  bool checkVarInitInClass(Node* n);
-  bool checkVarInit(Node* n);
-  bool typeCkeck();
-  string inferType(Node* n);
-  void generateCode();
-  void genClasses();
-  void genDeclarations();
-  string genCode(Node* n);
   void write(string s)
   { out << string(scope, '\t') << s << endl;
   }

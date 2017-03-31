@@ -9,7 +9,7 @@
 
 #include "Builtins.h"
 
-
+#define _GNU_SOURCE
 /* ==============
  * Obj
  * Fields: None

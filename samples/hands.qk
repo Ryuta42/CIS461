@@ -14,10 +14,14 @@ class RightHand(x: Int) extends Hand {
 }
 
 class Bot(x: Int) {
-   //if x > 0 {
+   if x > 0 {
       this.hand = LeftHand(3);
-   //} else {
+   } else {
       this.hand = RightHand(7);
-   //}
+   }
    this.answer = this.hand.foo();
 }
+
+hand = LeftHand(2);
+hand = RightHand(4);
+hand.foo();

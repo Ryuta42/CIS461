@@ -1,3 +1,8 @@
+/*	Compiler Project
+ *	CIS 461 Winter 2017
+ *  Miles Chew
+ */
+ 
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -36,8 +41,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-/*
-if you call the method of a subtype, it should return a subtype of thre super's return
-the parameters of a subtype must be a super type of a super class parameters
-*/

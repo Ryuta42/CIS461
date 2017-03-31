@@ -43,13 +43,11 @@ class Square(ll: Pt, side: Int) extends Rect {
 p1 = Pt(1, 3);
 p2 = Pt(5, 6);
 p3 = p1 + p2;
-p3 = p1.PLUS(p3);
 
-//a_square = Square( Pt(3,3), 5 );
-//a_square = a_square.translate( Pt(2,2) );
-//a_square.PRINT();
+a_square = Square( Pt(3,3), 5 );
+a_square.translate( Pt(2,2) );
+a_square.PRINT();
 
-/* ERRORS */
-//a_square.PRINT(;      // TODO: unclosed function call
-//a_square.PRIN();      // call to nonexistence member
-//a_square.PRINT;       // call member function as variable
+/* ERRORS that are caught */
+//a_square.PRIN();      // call to nonexistence method
+//a_square.PRINT;       // call method as variable
